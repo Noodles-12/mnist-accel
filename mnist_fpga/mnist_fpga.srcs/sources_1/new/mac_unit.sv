@@ -10,11 +10,8 @@ module mac_unit (
     logic signed [7:0]  weight_reg;
     logic signed [7:0]  activation_reg;
 
-    // 2. Product Register (For internal DSP multiplier pipeline)
-    // Attribute explicitly forces Vivado to use a DSP slice
     (* use_dsp = "yes" *) logic signed [15:0] prod_reg;
 
-    // Synchronous pipelining (DSP slices do not support async resets internally)
     always_ff @(posedge clk) begin
         if (!rst_n) begin
             weight_reg     <= '0;
@@ -27,7 +24,6 @@ module mac_unit (
         end
     end
 
-    // Output assignment (adds a total of 2 clock cycles of latency)
     assign op = prod_reg;
 
 endmodule
