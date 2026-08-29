@@ -10,6 +10,7 @@ module conv_mem#(
 
     // The index of the weights the current state of the convolution datapath needs
     input logic [3:0] filter_idx,
+    input logic filter_idx_v,
 
     // Filling in the image with the UART communication
     input logic img_wr_en,
