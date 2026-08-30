@@ -19,9 +19,19 @@ module conv_mem#(
 
     input logic [9:0] img_rd_addr [0:24],
 
-    output logic signed [7:0] area_pixel [0:24],
-    output logic signed [7:0] lane_weights [0:24]
+    output logic [7:0] area_pixel [0:24],
+    output logic signed [7:0] lane_weights [0:24],
+    output logic valid_weights
 );
+    // Holds logic of if lane_weights is valid
+    // Can't put in genvar block since it's just one signal
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            valid_weights <= 0;
+        end else begin
+            valid_weights <= filter_idx_v;
+        end
+    end
 
     for(genvar p = 0; p < NUM_LANES; p = p + 1) begin : gen_weight_lane
 
