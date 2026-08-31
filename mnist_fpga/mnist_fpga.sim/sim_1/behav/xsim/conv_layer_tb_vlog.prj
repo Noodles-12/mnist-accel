@@ -1,0 +1,14 @@
+# compile verilog/system verilog design source files
+sv xil_defaultlib  --include "../../../../../../../../../../opt/Xilinx/2025.2/data/rsb/busdef" \
+"../../../../mnist_fpga.srcs/sources_1/new/conv_addr_calc.sv" \
+"../../../../mnist_fpga.srcs/sources_1/new/conv_dp.sv" \
+"../../../../mnist_fpga.srcs/sources_1/new/conv_layer.sv" \
+"../../../../mnist_fpga.srcs/sources_1/new/conv_mem.sv" \
+"../../../../mnist_fpga.srcs/sources_1/new/mac_unit.sv" \
+"../../../../mnist_fpga.srcs/sim_1/new/conv_layer_tb.sv" \
+
+# compile glbl module
+verilog xil_defaultlib "glbl.v"
+
+# Do not sort compile order
+nosort

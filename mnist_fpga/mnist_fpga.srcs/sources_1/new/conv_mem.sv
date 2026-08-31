@@ -39,7 +39,7 @@ module conv_mem#(
         logic signed [7:0] weight_mem [0:NUM_FILTERS-1];
 
         initial begin
-            $readmemh();
+            $readmemh($sformatf("conv_w_%0d.mem", p), weight_mem);
         end
 
         always_ff @ (posedge clk) begin

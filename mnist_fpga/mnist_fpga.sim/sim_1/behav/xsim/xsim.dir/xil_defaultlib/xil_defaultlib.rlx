@@ -1,0 +1,11 @@
+0.7
+2020.2
+Nov 14 2025
+12:36:23
+/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.sim/sim_1/behav/xsim/glbl.v,1756381829,verilog,,,,glbl,,uvm,,,,,,
+/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sim_1/new/conv_layer_tb.sv,1788194357,systemVerilog,,,,conv_layer_tb,,uvm,../../../../../../../../../../opt/Xilinx/2025.2/data/rsb/busdef,,,,,
+/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/conv_addr_calc.sv,1788193870,systemVerilog,,/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/conv_dp.sv,,conv_addr_calc,,uvm,../../../../../../../../../../opt/Xilinx/2025.2/data/rsb/busdef,,,,,
+/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/conv_dp.sv,1788193923,systemVerilog,,/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/conv_layer.sv,,conv_dp,,uvm,../../../../../../../../../../opt/Xilinx/2025.2/data/rsb/busdef,,,,,
+/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/conv_layer.sv,1788194536,systemVerilog,,/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/conv_mem.sv,,conv_layer,,uvm,../../../../../../../../../../opt/Xilinx/2025.2/data/rsb/busdef,,,,,
+/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/conv_mem.sv,1788193707,systemVerilog,,/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/mac_unit.sv,,conv_mem,,uvm,../../../../../../../../../../opt/Xilinx/2025.2/data/rsb/busdef,,,,,
+/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sources_1/new/mac_unit.sv,1788193799,systemVerilog,,/home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.srcs/sim_1/new/conv_layer_tb.sv,,mac_unit,,uvm,../../../../../../../../../../opt/Xilinx/2025.2/data/rsb/busdef,,,,,

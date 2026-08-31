@@ -70,6 +70,7 @@ module conv_layer(
             filter_idx <= 0;
             filter_idx_ip <= 0;
             filter_alr_load <= 0;
+            filter_load_en <= 0;
 
             state <= CONV_IDLE;
         end else begin
@@ -80,6 +81,7 @@ module conv_layer(
 
                     filter_idx <= 0;
                     filter_alr_load <= 0;
+                    filter_load_en <= 0;
 
                     if(en) begin
                         state <= CONV_LOAD;

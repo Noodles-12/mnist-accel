@@ -20,7 +20,7 @@ module conv_dp#(
             if(!rst_n) begin
                 corrected_actv[p] <= 0;
             end else begin
-                corrected_actv[p] <= $signed(1'b0, area_pixel[p]) - 8'sd128;
+                corrected_actv[p] <= $signed({1'b0, area_pixel[p]}) - 8'sd128;
             end
         end
     end : gen_offset_array

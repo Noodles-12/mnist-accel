@@ -43,10 +43,10 @@ module conv_addr_calc#(
         always_ff @ (posedge clk) begin
             if(!rst_n) begin
                 img_rd_addr[p] <= 0;
-                valid_op <= 0;
+                op_v <= 0;
             end else begin
                 img_rd_addr[p] <= IMG_WIDTH * col[p] + row[p];
-                valid_op <= rd_en_ff1;
+                op_v <= rd_en_ff1;
             end
         end
     end : gen_conv_addrs
