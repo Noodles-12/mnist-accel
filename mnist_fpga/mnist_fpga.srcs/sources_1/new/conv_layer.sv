@@ -24,7 +24,13 @@ module conv_layer(
     logic valid_weights, weights_loaded;
 
     // CONV_FILTER logics
-    logic [7:0] idx_x, idx_y; // Image indexes for center of 5x5 convolutional area
+    localparam IDX_MIN = 2;  // First valid 5x5 center (28x28 image)
+    localparam IDX_MAX = 25; // Last valid 5x5 center
+
+    logic [7:0] idx_x, idx_x_reg; // Image indexes for center of 5x5 convolutional area
+    logic [7:0] idx_y, idx_y_reg;
+
+    logic [9:0] img_addrs [0:24];
 
     conv_addr_calc cac(
         .clk(clk),
@@ -33,7 +39,7 @@ module conv_layer(
         .idx_x(idx_x),
         .idx_y(idx_y),
 
-        .img_rd_addr(),
+        .img_rd_addr(img_addrs),
         .op_v()
     );
 
@@ -48,7 +54,7 @@ module conv_layer(
         .img_wr_data(),
         .img_rd_addr(),
 
-        .area_pixel(),
+        .area_pixel(a),
         .lane_weights(lane_weights),
         .valid_weights(valid_weights)
     );
@@ -64,8 +70,10 @@ module conv_layer(
 
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
-            idx_x <= 2;
-            idx_y <= 2;
+            idx_x <= IDX_MIN;
+            idx_y <= IDX_MIN;
+            idx_x_reg <= IDX_MIN;
+            idx_y_reg <= IDX_MIN;
 
             filter_idx <= 0;
             filter_idx_ip <= 0;
@@ -76,8 +84,10 @@ module conv_layer(
         end else begin
             unique case(state)
                 CONV_IDLE : begin
-                    idx_x <= 2;
-                    idx_y <= 2;
+                    idx_x <= IDX_MIN;
+                    idx_y <= IDX_MIN;
+                    idx_x_reg <= IDX_MIN;
+                    idx_y_reg <= IDX_MIN;
 
                     filter_idx <= 0;
                     filter_alr_load <= 0;
@@ -107,6 +117,21 @@ module conv_layer(
                 CONV_FILTER : begin
                     filter_alr_load <= 0;
                     filter_load_en <= 0;
+
+                    idx_x_reg <= idx_x;
+                    idx_y_reg <= idx_y;
+
+                    if(idx_x == IDX_MAX) begin
+                        idx_x <= IDX_MIN;
+                        idx_y <= (idx_y == IDX_MAX) ? IDX_MIN : idx_y + 1;
+
+                        // Whole image swept for this filter; go load the next filter
+                        if(idx_y == IDX_MAX) begin
+                            state <= CONV_LOAD;
+                        end
+                    end else begin
+                        idx_x <= idx_x + 1;
+                    end
                 end
             endcase
         end
