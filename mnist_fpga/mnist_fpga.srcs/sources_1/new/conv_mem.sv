@@ -10,7 +10,7 @@ module conv_mem#(
 
     // The index of the weights the current state of the convolution datapath needs
     input logic [3:0] filter_idx,
-    input logic filter_idx_v,
+    input logic filter_idx_v,                       // conv_layer FSM -> here : filter_idx valid
 
     // Filling in the image with the UART communication
     input logic img_wr_en,
@@ -18,28 +18,30 @@ module conv_mem#(
     input logic [7:0] img_wr_data,
 
     input logic [9:0] img_rd_addr [0:24],
-    input logic addrs_v,
+    input logic img_addrs_v,                        // conv_addr_calc -> here : img_rd_addr valid
+    input logic [9:0] out_addr,
 
     output logic [7:0] area_pixel [0:24],
-    output logic calc_en,
+    output logic area_pixel_v,                      // here -> conv_dp : area_pixel valid
+    output logic [9:0] out_addr_d1,
     output logic signed [7:0] lane_weights [0:24],
-    output logic valid_weights
+    output logic lane_weights_v                     // here -> conv_dp : lane_weights valid
 );
-    // Holds logic of if lane_weights is valid
-    // Can't put in genvar block since it's just one signal
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
-            valid_weights <= 0;
-            calc_en <= 0;
+            lane_weights_v <= 0;
+            area_pixel_v <= 0;
+            out_addr_d1 <= 0;
         end else begin
-            valid_weights <= filter_idx_v;
-
+            lane_weights_v <= filter_idx_v;
+            area_pixel_v <= img_addrs_v;
+            out_addr_d1 <= out_addr;
         end
     end
 
     for(genvar p = 0; p < NUM_LANES; p = p + 1) begin : gen_weight_lane
 
-        (* ram_style = "block" *) 
+        (* ram_style = "block" *)
         logic signed [7:0] weight_mem [0:NUM_FILTERS-1];
 
         initial begin
@@ -57,7 +59,7 @@ module conv_mem#(
 
     for(genvar p = 0; p < NUM_LANES; p = p + 1) begin : gen_image_buffer
 
-        (* ram_style = "block" *) 
+        (* ram_style = "block" *)
         logic [7:0] img_mem [0:IMG_SIZE-1];
 
         always_ff @(posedge clk) begin

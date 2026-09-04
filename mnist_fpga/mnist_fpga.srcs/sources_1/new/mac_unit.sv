@@ -4,14 +4,15 @@ module mac_unit (
     input logic clk,
     input logic rst_n,
     input logic load_weight,
+    
     input logic signed [7:0] weight,
     input logic signed [7:0] activation,
     
     output logic signed [15:0] op
 );
 
-    logic signed [7:0]  weight_reg;
-    logic signed [7:0]  activation_reg;
+    logic signed [7:0] weight_reg;
+    logic signed [7:0] activation_reg;
 
     (* use_dsp = "yes" *) 
     logic signed [15:0] prod_reg;

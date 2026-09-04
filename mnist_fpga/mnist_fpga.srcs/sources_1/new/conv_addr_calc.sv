@@ -3,11 +3,12 @@
 module conv_addr_calc#(
     parameter int NUM_LANES  = 25,
     parameter int IMG_WIDTH  = 28,
-    parameter int IMG_HEIGHT = 28
+    parameter int IMG_HEIGHT = 28,
+    parameter int KERNEL     = 5
 )(
     input logic clk,
     input logic rst_n,
-    input logic calc_en,
+    input logic sweep_en,               // conv_layer FSM -> here : run the window sweep
 
     input logic [3:0] filter_idx,
     input logic [5:0] idx_x,
@@ -15,26 +16,43 @@ module conv_addr_calc#(
 
     (* use_dsp = "yes" *)
     output logic [9:0] img_rd_addr [0:24],
-    output logic op_v,
-    output logic [3:0] filter_idx_out
-
-    // Add output that represents final address of 5x5 conv operation o/p in conv_layer output memory
+    output logic img_addrs_v,           // here -> conv_mem : img_rd_addr valid
+    output logic [9:0] out_addr         // here -> output mem : dest for this window's result
 );
 
     localparam int signed OFFSETS[0:4] = '{-2, -1, 0, 1, 2};
 
+    localparam int IDX_MIN = KERNEL / 2;                 // 2  : first valid window center
+    localparam int OUT_WIDTH = IMG_WIDTH  - KERNEL + 1;    // 24 : output feature map width
+    localparam int OUT_HEIGHT = IMG_HEIGHT - KERNEL + 1;    // 24 : output feature map height
+
     logic [5:0] row [0:24];
     logic [5:0] col [0:24];
 
-    logic rd_en_ff1;
+    logic [4:0] out_x, out_y;           // window center rebased to 0,0 of the output map
+
+    logic sweep_en_d1;                  // stage-1 delay of sweep_en (matches row/col)
 
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
-            rd_en_ff1 <= 0;
-            op_v <= 0;
+            sweep_en_d1 <= 0;
+            img_addrs_v <= 0;
         end else begin
-            rd_en_ff1 <= calc_en;
-            op_v <= rd_en_ff1;
+            sweep_en_d1 <= sweep_en;
+            img_addrs_v <= sweep_en_d1;
+        end
+    end
+
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            out_x <= 0;
+            out_y <= 0;
+            out_addr <= 0;
+        end else begin
+            out_x <= idx_x - IDX_MIN;
+            out_y <= idx_y - IDX_MIN;
+
+            out_addr <= out_y * OUT_WIDTH + out_x;
         end
     end
 
@@ -47,8 +65,8 @@ module conv_addr_calc#(
                 row[p] <= 0;
                 col[p] <= 0;
              end else begin
-                row[p] <= OFFSETS[DX_IDX] + idx_x;
-                col[p] <= OFFSETS[DY_IDX] + idx_y;
+                row[p] <= OFFSETS[DY_IDX] + idx_y;
+                col[p] <= OFFSETS[DX_IDX] + idx_x;
              end
         end
 
@@ -56,7 +74,7 @@ module conv_addr_calc#(
             if(!rst_n) begin
                 img_rd_addr[p] <= 0;
             end else begin
-                img_rd_addr[p] <= IMG_WIDTH * col[p] + row[p];
+                img_rd_addr[p] <= IMG_WIDTH * row[p] + col[p];
 
             end
         end
