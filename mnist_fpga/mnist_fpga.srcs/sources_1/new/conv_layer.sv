@@ -31,16 +31,21 @@ module conv_layer(
     logic [7:0] idx_y, idx_y_reg;
 
     logic [9:0] img_addrs [0:24];
+    logic [7:0] area_pixel [0:24];
+
+    logic calc_en, addrs_v;
 
     conv_addr_calc cac(
         .clk(clk),
         .rst_n(rst_n),
-        .rd_en(),
+        .calc_en(calc_en),
+
+        .filter_idx(),
         .idx_x(idx_x),
         .idx_y(idx_y),
 
         .img_rd_addr(img_addrs),
-        .op_v()
+        .op_v(addrs_v)
     );
 
     conv_mem cm(
@@ -52,9 +57,12 @@ module conv_layer(
         .img_wr_en(),
         .img_wr_addr(),
         .img_wr_data(),
-        .img_rd_addr(),
 
-        .area_pixel(a),
+        .img_rd_addr(img_addrs),
+        .addrs_v(addrs_v),
+
+        .area_pixel(area_pixel),
+        .calc_en(calc_en),
         .lane_weights(lane_weights),
         .valid_weights(valid_weights)
     );
@@ -62,8 +70,12 @@ module conv_layer(
     conv_dp cdp(
         .clk(clk),
         .rst_n(rst_n),
+
         .lane_weights(lane_weights),
         .valid_weights(valid_weights),
+
+        .area_pixel(area_pixel),
+        .calc_en(calc_en),
 
         .weights_loaded(weights_loaded)
     );

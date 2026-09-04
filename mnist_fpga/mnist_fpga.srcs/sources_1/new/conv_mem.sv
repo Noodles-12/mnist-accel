@@ -18,8 +18,10 @@ module conv_mem#(
     input logic [7:0] img_wr_data,
 
     input logic [9:0] img_rd_addr [0:24],
+    input logic addrs_v,
 
     output logic [7:0] area_pixel [0:24],
+    output logic calc_en,
     output logic signed [7:0] lane_weights [0:24],
     output logic valid_weights
 );
@@ -28,8 +30,10 @@ module conv_mem#(
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
             valid_weights <= 0;
+            calc_en <= 0;
         end else begin
             valid_weights <= filter_idx_v;
+
         end
     end
 
@@ -43,7 +47,7 @@ module conv_mem#(
         end
 
         always_ff @ (posedge clk) begin
-            if(!rst_n) begin
+            if(!rst_n || !filter_idx_v) begin // filter_idx_v possibly not needed (might even be worse) but makes simulation cleaner
                 lane_weights[p] <= 0;
             end else begin
                 lane_weights[p] <= weight_mem[filter_idx];

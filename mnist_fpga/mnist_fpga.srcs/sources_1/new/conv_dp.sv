@@ -6,14 +6,21 @@ module conv_dp#(
     input logic clk,
     input logic rst_n,
 
-    input logic signed [7:0] lane_weights [0:24],
-    input logic valid_weights,
+    // Pixel input array for the MAC array
+    input logic calc_en,
     input logic [7:0] area_pixel [0:24],
 
+    // Weight input array for the MAC array
+    input logic valid_weights,
+    input logic signed [7:0] lane_weights [0:24],
+
+    // Signal to tell conv_layer FSM to move to CONV_FILTER
     output logic weights_loaded
 );
     // Offest -> MAC Array
     logic signed [7:0] corrected_actv [0:24];
+
+    
 
     for(genvar p = 0; p < NUM_LANES; p = p + 1) begin : gen_offset_array
         always_ff @ (posedge clk) begin
@@ -33,15 +40,20 @@ module conv_dp#(
         end
     end
 
+    // MAC Array -> Adder Tree
     for(genvar p = 0; p < NUM_LANES; p = p + 1) begin : gen_mac_array
         mac_unit mac_u(
             .clk(clk),
             .rst_n(rst_n),
+
             .load_weight(valid_weights),
             .weight(lane_weights[p]),
+
             .activation(corrected_actv[p]),
             
             .op()
         );
     end : gen_mac_array
+
+
 endmodule
