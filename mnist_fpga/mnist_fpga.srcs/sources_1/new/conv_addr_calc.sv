@@ -10,7 +10,6 @@ module conv_addr_calc#(
     input logic rst_n,
     input logic sweep_en,               // conv_layer FSM -> here : run the window sweep
 
-    input logic [3:0] filter_idx,
     input logic [5:0] idx_x,
     input logic [5:0] idx_y,
 

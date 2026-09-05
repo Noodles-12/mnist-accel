@@ -3,9 +3,14 @@
 module conv_layer(
     input logic clk,
     input logic rst_n,
-    input logic en
+    input logic en,
 
     // Outputs to be determined later
+    output logic calc_v,
+    output logic [20:0] final_res,
+    output logic [9:0] res_addr,
+    output logic [3:0] filter_addr,
+    output logic done
 );
 
     typedef enum logic [1:0] {
@@ -18,9 +23,12 @@ module conv_layer(
     conv_state state;
 
     // CONV_LOAD logics
+    localparam NUM_FILTERS = 16;
+
     logic wt_load_sent;                 // pulse for this filter already issued
     logic wt_load_en;                   // FSM -> cm  : request weights for filter_idx_ip
-    logic [3:0] filter_idx, filter_idx_ip;
+    logic [4:0] filter_idx;             // next filter to load; == NUM_FILTERS once all are swept
+    logic [3:0] filter_idx_ip;          // filter currently in flight
 
     logic signed [7:0] lane_weights [0:24];
     logic lane_weights_v;               // cm  -> cdp : lane_weights valid
@@ -51,7 +59,6 @@ module conv_layer(
         .rst_n(rst_n),
         .sweep_en(sweep_en),
 
-        .filter_idx(),
         .idx_x(idx_x),
         .idx_y(idx_y),
 
@@ -85,16 +92,20 @@ module conv_layer(
         .clk(clk),
         .rst_n(rst_n),
 
-        .lane_weights(lane_weights),
-        .lane_weights_v(lane_weights_v),
-        .filter_idx(),
-
         .area_pixel(area_pixel),
         .area_pixel_v(area_pixel_v),
+
+        .lane_weights_v(lane_weights_v),
+        .lane_weights(lane_weights),
+        .filter_idx(filter_idx_ip), // Might need to give its own valid check b/c of timing
+
         .out_addr(out_addr_d1),
 
         .wt_load_done(wt_load_done),
-        .calc_v(calc_v)
+        .calc_v(calc_v),
+        .final_res(final_res),
+        .res_addr(res_addr),
+        .filter_addr(filter_addr)
     );
 
     always_ff @ (posedge clk) begin
@@ -136,17 +147,32 @@ module conv_layer(
                 end
 
                 CONV_LOAD : begin
-                    if(!wt_load_sent) begin
-                        wt_load_en <= 1;
-                        filter_idx_ip <= filter_idx;
-                        filter_idx <= filter_idx + 1;
-                        wt_load_sent <= 1;
-                    end else begin
-                        wt_load_en <= 0;
-                    end
+                    send_ctr <= 0;
+                    recv_ctr <= 0;
 
-                    if(wt_load_done) begin
-                        state <= CONV_FILTER;
+                    idx_x <= IDX_MIN;
+                    idx_y <= IDX_MIN;
+                    idx_x_reg <= IDX_MIN;
+                    idx_y_reg <= IDX_MIN;
+
+                    if(filter_idx == NUM_FILTERS) begin
+                        // Every filter has been loaded and swept; nothing left to do
+                        wt_load_en <= 0;
+                        state <= CONV_DONE;
+                    end else begin
+                        if(!wt_load_sent) begin
+                            wt_load_en <= 1;
+                            filter_idx_ip <= filter_idx[3:0];
+                            filter_idx <= filter_idx + 1;
+                            wt_load_sent <= 1;
+                        end else begin
+                            wt_load_en <= 0;
+                        end
+
+                        if(wt_load_done) begin
+                            state <= CONV_FILTER;
+                            sweep_en <= 1;
+                        end
                     end
                 end
 
@@ -188,6 +214,14 @@ module conv_layer(
                     end else begin
                         idx_x <= idx_x + 1;
                     end
+                end
+
+                CONV_DONE : begin
+                    wt_load_en <= 0;
+                    sweep_en <= 0;
+                    done <= 1;
+
+                    
                 end
             endcase
         end
