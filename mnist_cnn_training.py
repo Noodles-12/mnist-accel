@@ -163,6 +163,25 @@ def get_input_activation_zero_point(quantized_model):
     return None
 
 
+def get_input_activation_scale(quantized_model):
+    quant_module = quantized_model.quant
+
+    candidate_paths = [
+        lambda m: m.activation_post_process.scale.item(),
+        lambda m: m.scale.item(),
+        lambda m: m.scale,
+        lambda m: float(m.activation_post_process.scale),
+    ]
+
+    for get_scale in candidate_paths:
+        try:
+            return float(get_scale(quant_module))
+        except (AttributeError, TypeError):
+            continue
+
+    return None
+
+
 def check_shape(name, actual_shape, expected_shape):
     if tuple(actual_shape) != tuple(expected_shape):
         raise ExportCheckError(
@@ -214,7 +233,34 @@ def check_lane_reconstruction(lane_dir, num_filters, filter_size, original_flat_
     print(f"  [ok] {filter_size} lane files reconstruct original weights exactly")
 
 
-def export_dense_layer(quantized_model, layer_name, out_dir):
+def export_bias(layer_name, bias_fp32, weight_scale, input_scale, out_dir):
+    """
+    Writes bias as plain fp32 text (human-checkable) and, if input_scale is
+    known, as int32 hex .mem (bias_scale = input_scale * weight_scale, the
+    standard convention so int32 accumulator + bias can add directly).
+    """
+    txt_path = os.path.join(out_dir, f"{layer_name}_bias.txt")
+    with open(txt_path, "w") as f:
+        for v in bias_fp32:
+            f.write(f"{float(v):.8g}\n")
+    print(f"  wrote {txt_path}")
+
+    if input_scale is None:
+        print(f"  [warn] {layer_name} bias: input activation scale unknown -- "
+              f"skipping quantized int32 .mem (fp32 .txt/.npy still written)")
+        return
+
+    bias_scale = input_scale * weight_scale
+    bias_int32 = np.round(bias_fp32 / bias_scale).astype(np.int32)
+
+    mem_path = os.path.join(out_dir, f"{layer_name}_bias.mem")
+    with open(mem_path, "w") as f:
+        for v in bias_int32:
+            f.write(f"{int(v) & 0xFFFFFFFF:08x}\n")
+    print(f"  wrote {mem_path} (int32, bias_scale={bias_scale:.6g})")
+
+
+def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None):
     layer = getattr(quantized_model, layer_name)
     try:
         w, b = layer._weight_bias()
@@ -235,12 +281,14 @@ def export_dense_layer(quantized_model, layer_name, out_dir):
     check_mem_roundtrip(f"{layer_name} weight", mem_path, flat)
 
     np.save(os.path.join(out_dir, f"{layer_name}_weight_scale.npy"), np.array(w_scale))
-    np.save(os.path.join(out_dir, f"{layer_name}_bias_fp32.npy"), b.detach().numpy())
+    bias_fp32 = b.detach().numpy()
+    np.save(os.path.join(out_dir, f"{layer_name}_bias_fp32.npy"), bias_fp32)
+    export_bias(layer_name, bias_fp32, w_scale, input_scale, out_dir)
 
     print(f"  {layer_name}: {w_int.shape} = {flat.size} weights, scale={w_scale:.6g}")
 
 
-def export_conv1(quantized_model, out_dir):
+def export_conv1(quantized_model, out_dir, input_scale=None):
     print("\nExporting conv1 weights...")
     layer = quantized_model.conv1
     try:
@@ -289,7 +337,9 @@ def export_conv1(quantized_model, out_dir):
     check_lane_reconstruction(lane_dir, num_filters, filter_size, flat_filter_major)
 
     np.save(os.path.join(out_dir, "conv1_weight_scale.npy"), np.array(w_scale))
-    np.save(os.path.join(out_dir, "conv1_bias_fp32.npy"), b.detach().numpy())
+    bias_fp32 = b.detach().numpy()
+    np.save(os.path.join(out_dir, "conv1_bias_fp32.npy"), bias_fp32)
+    export_bias("conv1", bias_fp32, w_scale, input_scale, out_dir)
 
     print(f"  conv1: {num_filters} filters x {filter_size} weights = "
           f"{num_filters * filter_size} total, scale={w_scale:.6g}")
@@ -337,9 +387,18 @@ def main():
                   "(PyTorch version-specific attribute path) -- verifying indirectly "
                   "via golden reference instead.")
 
-        export_conv1(quantized, args.out_dir)
-        export_dense_layer(quantized, "fc1", args.out_dir)
-        export_dense_layer(quantized, "fc2", args.out_dir)
+        net_input_scale = get_input_activation_scale(quantized)
+        if net_input_scale is None:
+            print("  [warn] could not introspect input activation scale directly -- "
+                  "bias .mem files will be skipped (fp32 .txt/.npy still written).")
+
+        # Each layer's bias_scale needs *that layer's own input* activation scale
+        # (input_scale * weight_scale), not the network input scale. conv1's
+        # input is the network input; fc1's input is conv1's output (maxpool
+        # doesn't rescale); fc2's input is fc1's output.
+        export_conv1(quantized, args.out_dir, input_scale=net_input_scale)
+        export_dense_layer(quantized, "fc1", args.out_dir, input_scale=quantized.conv1.scale)
+        export_dense_layer(quantized, "fc2", args.out_dir, input_scale=quantized.fc1.scale)
 
     except ExportCheckError as e:
         print(f"\n{e}")
