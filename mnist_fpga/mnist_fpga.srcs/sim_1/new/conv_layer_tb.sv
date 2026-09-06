@@ -34,19 +34,34 @@ module conv_layer_tb();
     // Check that weight_mem was loaded correctly from conv_w_<lane>.mem at time 0
     initial begin
         #1;
-        if (dut.cm.gen_weight_lane[0].weight_mem[0] !== 8'hf7)
-            $error("lane 0, filter 0 = %h, expected f7", dut.cm.gen_weight_lane[0].weight_mem[0]);
+        if (dut.cm.gen_weight_lane[0].weight_mem[0] !== 8'h08)
+            $error("lane 0, filter 0 = %h, expected 08", dut.cm.gen_weight_lane[0].weight_mem[0]);
 
-        if (dut.cm.gen_weight_lane[0].weight_mem[1] !== 8'h0f)
-            $error("lane 0, filter 1 = %h, expected 0f", dut.cm.gen_weight_lane[0].weight_mem[1]);
+        if (dut.cm.gen_weight_lane[0].weight_mem[1] !== 8'h1c)
+            $error("lane 0, filter 1 = %h, expected 1c", dut.cm.gen_weight_lane[0].weight_mem[1]);
 
-        if (dut.cm.gen_weight_lane[1].weight_mem[0] !== 8'h09)
-            $error("lane 1, filter 0 = %h, expected 09", dut.cm.gen_weight_lane[1].weight_mem[0]);
+        if (dut.cm.gen_weight_lane[1].weight_mem[0] !== 8'h1e)
+            $error("lane 1, filter 0 = %h, expected 1e", dut.cm.gen_weight_lane[1].weight_mem[0]);
 
-        if (dut.cm.gen_weight_lane[1].weight_mem[1] !== 8'h33)
-            $error("lane 1, filter 1 = %h, expected 33", dut.cm.gen_weight_lane[1].weight_mem[1]);
+        if (dut.cm.gen_weight_lane[1].weight_mem[1] !== 8'h4f)
+            $error("lane 1, filter 1 = %h, expected 4f", dut.cm.gen_weight_lane[1].weight_mem[1]);
 
         $display("weight_mem load check done");
+    end
+
+    // Check that bias_mem was loaded correctly from conv1_bias.mem at time 0
+    initial begin
+        #1;
+        if (dut.cdp.bias_mem[0] !== 32'sd4164)
+            $error("bias filter 0 = %0d, expected 4164", dut.cdp.bias_mem[0]);
+
+        if (dut.cdp.bias_mem[6] !== 32'sd9332)
+            $error("bias filter 6 = %0d, expected 9332", dut.cdp.bias_mem[6]);
+
+        if (dut.cdp.bias_mem[15] !== -32'sd959)
+            $error("bias filter 15 = %0d, expected -959", dut.cdp.bias_mem[15]);
+
+        $display("bias_mem load check done");
     end
 
     initial begin

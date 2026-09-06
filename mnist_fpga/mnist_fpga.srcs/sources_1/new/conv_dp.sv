@@ -1,7 +1,8 @@
 `timescale 1ns / 1ps
 
 module conv_dp#(
-    parameter int NUM_LANES = 25
+    parameter int NUM_LANES = 25,
+    parameter int NUM_FILTERS = 16
 )(
     input logic clk,
     input logic rst_n,
@@ -20,10 +21,18 @@ module conv_dp#(
     // Signal to tell conv_layer FSM to move to CONV_FILTER
     output logic wt_load_done,                      // here -> conv_layer FSM : MACs latched weights
     output logic calc_v,
-    output logic [20:0] final_res,
+    output logic [31:0] final_res,
     output logic [9:0] res_addr,
     output logic [3:0] filter_addr
 );
+    (* ram_style = "distributed" *)
+    logic signed [31:0] bias_mem [0:NUM_FILTERS-1];
+
+    initial begin
+        $readmemh("conv1_bias.mem", bias_mem);
+    end
+
+    logic signed [31:0] bias_reg;
 
     logic signed [7:0] corrected_actv [0:24];   // Offest -> MAC Array
     logic signed [15:0] mac_arr_op [0:24];
@@ -32,10 +41,11 @@ module conv_dp#(
     logic signed [18:0] adder3_op [0:3];
     logic signed [19:0] adder4_op [0:1];
     logic signed [20:0] adder_fin;
+    logic signed [31:0] biased_res;
 
     // Cycles from the area_pixel_v / out_addr inputs through to final_res:
-    // 1 corrected_actv + 2 mac_unit + 5 adder tree + 1 relu
-    localparam int DP_LATENCY = 9;
+    // 1 corrected_actv + 2 mac_unit + 5 adder tree + 1 bias + 1 relu
+    localparam int DP_LATENCY = 10;
 
     logic calc_v_pipe [0:DP_LATENCY-1];             // area_pixel_v walked alongside the data
     logic [9:0] res_addr_pipe [0:DP_LATENCY-1];     // out_addr walked alongside the data
@@ -44,11 +54,13 @@ module conv_dp#(
         if(!rst_n) begin
             wt_load_done <= 0;
             filter_addr <= 0;
+            bias_reg <= 0;
         end else begin
             wt_load_done <= lane_weights_v;
             
             if(lane_weights_v) begin
                 filter_addr <= filter_idx;
+                bias_reg <= bias_mem[filter_idx];
             end
         end
     end
@@ -148,13 +160,22 @@ module conv_dp#(
         .op(adder_fin)
     );
 
+    // Bias
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            biased_res <= '0;
+        end else begin
+            biased_res <= adder_fin + bias_reg;
+        end
+    end
+
     // ReLu
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
             final_res <= '0;
         end else begin
-            if(adder_fin > 0)
-                final_res <= adder_fin;
+            if(biased_res > 0)
+                final_res <= biased_res;
             else
                 final_res <= '0;
         end

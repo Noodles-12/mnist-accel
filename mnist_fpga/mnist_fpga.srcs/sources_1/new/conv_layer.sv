@@ -7,7 +7,7 @@ module conv_layer(
 
     // Outputs to be determined later
     output logic calc_v,
-    output logic [20:0] final_res,
+    output logic [31:0] final_res,
     output logic [9:0] res_addr,
     output logic [3:0] filter_addr,
     output logic done
@@ -49,7 +49,6 @@ module conv_layer(
     logic sweep_en;                     // FSM -> cac : run the window sweep
     logic img_addrs_v;                  // cac -> cm  : img_addrs valid
     logic area_pixel_v;                 // cm  -> cdp : area_pixel valid
-    logic calc_v;
 
     logic [9:0] out_addr;               // cac -> cm  : output-map dest for this window
     logic [9:0] out_addr_d1;            // cm  -> cdp : out_addr realigned to area_pixel
@@ -122,6 +121,7 @@ module conv_layer(
             wt_load_sent <= 0;
             wt_load_en <= 0;
             sweep_en <= 0;
+            done <= 0;
 
             send_ctr <= 0;
             recv_ctr <= 0;
@@ -220,8 +220,7 @@ module conv_layer(
                     wt_load_en <= 0;
                     sweep_en <= 0;
                     done <= 1;
-
-                    
+                    state <= CONV_IDLE;
                 end
             endcase
         end
