@@ -9,10 +9,12 @@ module pool_mem(
     input logic [9:0] wr_mem_addr,
     input logic [3:0] wr_filter_addr,
 
+    input logic [7:0] res_addr_ip,
     input logic rd_en,
     input logic [9:0] rd_addr [0:3],
 
-    output logic [9:0] rd_data [0:15][0:3];
+    output logic [9:0] rd_data [0:15][0:3],
+    output logic [7:0] res_addr_op
 );
 
     for(genvar p = 0; p < 16; p = p + 1) begin : gen_pool_mem

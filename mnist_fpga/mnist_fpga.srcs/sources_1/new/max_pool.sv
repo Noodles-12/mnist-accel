@@ -21,16 +21,18 @@ module max_pool(
 
     logic [5:0] idx_x, idx_x_reg;
     logic [5:0] idx_y, idx_y_reg;
+    logic comp_en;
 
     pool_addr_calc pac(
         .clk(clk),
         .rst_n(rst_n),
-        .comp_en(),
+        .comp_en(comp_en),
 
         .idx_x(idx_x_reg),
         .idx_y(idx_y_reg),
 
         .addr_op(),
+        .res_addr(),
         .addrs_v()
     );
 
@@ -43,10 +45,12 @@ module max_pool(
         .wr_mem_addr(wr_mem_addr),
         .wr_filter_addr(wr_filter_addr),
 
+        .res_addr_ip(),
         .rd_en(),
         .rd_addr(),
 
-        .rd_data()
+        .rd_data(),
+        .res_addr_op()
     );
 
     always_ff @ (posedge clk) begin
@@ -57,6 +61,8 @@ module max_pool(
 
             idx_x_reg <= 0;
             idx_y_reg <= 0;
+
+            comp_en <= 0;
         end else begin
             unique case(state) 
                 POOL_IDLE : begin
@@ -65,6 +71,8 @@ module max_pool(
 
                     idx_x_reg <= 0;
                     idx_y_reg <= 0;
+
+                    comp_en <= 0;
                 end
 
                 POOL_EXEC : begin

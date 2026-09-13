@@ -1,26 +1,25 @@
 `timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 09/06/2026 08:58:15 AM
-// Design Name: 
-// Module Name: accel_top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
-
 
 module accel_top(
+    input logic clk,
+    input logic rst_n
+);
 
-    );
+    typedef enum {
+        TOP_IDLE,
+        TOP_IMAGE,
+        TOP_CONV,
+        TOP_POOL,
+        TOP_DONE
+    } top_state;
+
+    top_state state;
+
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            state <= TOP_IDLE;
+        end else begin
+
+        end
+    end
 endmodule

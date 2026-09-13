@@ -9,11 +9,15 @@ module pool_addr_calc(
     input logic [5:0] idx_y,
 
     output logic [9:0] addr_op [0:3],
+    output logic [7:0] res_addr,
     output logic addrs_v
 );
 
     logic [5:0] idx_xs [0:3];
     logic [5:0] idx_ys [0:3];
+
+    logic [5:0] res_addr_x;
+    logic [5:0] res_addr_y;
 
     logic comp_en_reg;
 
@@ -24,6 +28,18 @@ module pool_addr_calc(
         end else begin
             comp_en_reg <= comp_en;
             addrs_v <= comp_en_reg;
+        end
+    end
+
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            res_addr <= 0;
+            res_addr_x <= 0;
+            res_addr_y <= 0;
+        end else begin
+            res_addr_x <= idx_xs[0] >> 1;
+            res_addr_y <= idx_ys[0] >> 1;
+            res_addr <= 12 * res_addr_y + res_addr_x; // Add more guards for guaranteed 8 bit address
         end
     end
 
