@@ -14,7 +14,8 @@ module pool_mem(
     input logic [9:0] rd_addr [0:3],
 
     output logic [9:0] rd_data [0:15][0:3],
-    output logic [7:0] res_addr_op
+    output logic [7:0] res_addr_op,
+    output logic data_v
 );
 
     for(genvar p = 0; p < 16; p = p + 1) begin : gen_pool_mem
