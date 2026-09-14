@@ -13,7 +13,7 @@ module pool_mem(
     input logic rd_en,
     input logic [9:0] rd_addr [0:3],
 
-    output logic [9:0] rd_data [0:15][0:3],
+    output logic [31:0] rd_data [0:15][0:3],
     output logic [7:0] res_addr_op,
     output logic data_v
 );
@@ -36,4 +36,14 @@ module pool_mem(
             end
         end : gen_clone
     end : gen_pool_mem
+
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            res_addr_op <= '0;
+            data_v <= 0;
+        end else begin
+            res_addr_op <= res_addr_ip;
+            dava_v <= rd_en;
+        end
+    end
 endmodule

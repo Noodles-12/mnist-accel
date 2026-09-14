@@ -4,17 +4,17 @@ module pool_dp(
     input logic clk,
     input logic rst_n,
 
-    input logic [9:0] data_ip [0:15][0:3],
+    input logic [31:0] data_ip [0:15][0:3],
     input logic [7:0] res_addr,
     input logic data_v,
 
-    output logic [9:0] res [0:15],
+    output logic [31:0] res [0:15],
     output logic [7:0] res_addr_op,
     output logic res_v
 );
 
-    logic [9:0] comp_a [0:15];
-    logic [9:0] comp_b [0:15];
+    logic [31:0] comp_a [0:15];
+    logic [31:0] comp_b [0:15];
 
     logic [7:0] res_addr_reg;
     logic data_v_reg;
