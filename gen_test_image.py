@@ -1,0 +1,224 @@
+#!/usr/bin/env python3
+"""
+Pulls one real image out of the MNIST test set, quantizes it the same way the
+trained model's QuantStub does (symmetric quint8, zero_point=128), and writes
+it out as a conv_mem-compatible .mem file for RTL simulation.
+
+Also computes a bit-exact golden reference for conv1's post-bias-ReLU output
+(16 filters x 24x24), using the same int8 weights / int32 bias / integer
+arithmetic the RTL uses, so a testbench can compare against it directly with
+no floating point involved anywhere in the comparison.
+
+No numpy/torch required -- MNIST's IDX format and .npy's header are both
+trivial to parse by hand, and the golden conv is small enough for pure
+Python (16 * 24 * 24 * 25 ~= 230k MACs).
+
+Usage:
+    python3 gen_test_image.py --index 0
+    python3 gen_test_image.py --index 17 --out-dir mnist_fpga/mnist_fpga.srcs/sim_1/new
+"""
+import argparse
+import ast
+import os
+import struct
+import zlib
+
+
+def read_npy_scalar(path):
+    with open(path, "rb") as f:
+        assert f.read(6) == b"\x93NUMPY", f"{path} is not a .npy file"
+        major, _minor = f.read(2)
+        hlen = struct.unpack("<H" if major == 1 else "<I", f.read(2 if major == 1 else 4))[0]
+        header = ast.literal_eval(f.read(hlen).decode().strip())
+        data = f.read()
+    fmt = {"<f4": "f", "<f8": "d"}[header["descr"]]
+    return struct.unpack("<" + fmt, data)[0]
+
+
+def read_mnist_image(idx_path, index):
+    with open(idx_path, "rb") as f:
+        magic, n, rows, cols = struct.unpack(">IIII", f.read(16))
+        assert magic == 2051, f"bad magic {magic} in {idx_path}"
+        assert 0 <= index < n, f"index {index} out of range (0..{n-1})"
+        f.seek(16 + index * rows * cols)
+        raw = f.read(rows * cols)
+    return rows, cols, list(raw)
+
+
+def read_mnist_label(idx_path, index):
+    with open(idx_path, "rb") as f:
+        magic, n = struct.unpack(">II", f.read(8))
+        assert magic == 2049, f"bad magic {magic} in {idx_path}"
+        f.seek(8 + index)
+        return f.read(1)[0]
+
+
+def read_hex_mem(path, signed_width=None):
+    vals = []
+    with open(path) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            v = int(line, 16)
+            if signed_width is not None and v >= (1 << (signed_width - 1)):
+                v -= 1 << signed_width
+            vals.append(v)
+    return vals
+
+
+def fit_input_scale(export_dir):
+    """
+    bias_int32[i] == round(bias_fp32[i] / (input_scale * weight_scale)), the
+    convention export_bias() in mnist_cnn_training.py uses. Recover
+    bias_scale by least-squares (robust to per-entry rounding noise), then
+    divide out weight_scale.
+    """
+    weight_scale = read_npy_scalar(os.path.join(export_dir, "conv1_weight_scale.npy"))
+    bias_fp32 = [float(l) for l in open(os.path.join(export_dir, "conv1_bias.txt"))]
+    bias_int32 = read_hex_mem(os.path.join(export_dir, "conv1_bias.mem"), signed_width=32)
+
+    num = sum(t * m for t, m in zip(bias_fp32, bias_int32))
+    den = sum(m * m for m in bias_int32)
+    bias_scale = num / den
+    return bias_scale / weight_scale, weight_scale, bias_int32
+
+
+def quantize_pixel(raw_byte, input_scale):
+    """Mirrors the model's QuantStub: quint8, symmetric, zero_point=128.
+    Input to the stub is ToTensor()'s raw_byte/255 (no Normalize in the
+    training pipeline), so: q = round((raw_byte/255) / input_scale) + 128."""
+    q = round((raw_byte / 255.0) / input_scale) + 128
+    return max(0, min(255, q))
+
+
+def compute_golden_conv1(q_pixels, rows, cols, weights, bias_int32):
+    """weights: flat list of 16*25 int8, filter-major, kernel taps in
+    row-major (ky*5+kx) order -- exactly conv1_weights.mem / conv_addr_calc's
+    layout. Returns golden[f][y][x], post-bias, post-ReLU, always >= 0."""
+    num_filters, ksize = 16, 5
+    out_h, out_w = rows - ksize + 1, cols - ksize + 1
+    golden = [[[0] * out_w for _ in range(out_h)] for _ in range(num_filters)]
+
+    for f in range(num_filters):
+        w = weights[f * 25:(f + 1) * 25]
+        for oy in range(out_h):
+            for ox in range(out_w):
+                acc = 0
+                for ky in range(ksize):
+                    row = oy + ky
+                    base = row * cols + ox
+                    wrow = w[ky * 5:ky * 5 + 5]
+                    for kx in range(ksize):
+                        acc += wrow[kx] * (q_pixels[base + kx] - 128)
+                acc += bias_int32[f]
+                golden[f][oy][ox] = acc if acc > 0 else 0
+    return golden
+
+
+ASCII_RAMP = " .:-=+*#%@"
+
+
+def ascii_art(raw_bytes, rows, cols):
+    lines = []
+    for y in range(rows):
+        row = raw_bytes[y * cols:(y + 1) * cols]
+        lines.append("".join(ASCII_RAMP[min(9, p * 10 // 256)] for p in row))
+    return "\n".join(lines)
+
+
+def write_png(path, raw_bytes, rows, cols, scale=10):
+    """Minimal 8-bit grayscale PNG, nearest-neighbor upscaled, so the picked
+    digit can actually be looked at instead of just read as bytes. Built by
+    hand with zlib (stdlib) -- no imaging library available/needed."""
+    w, h = cols * scale, rows * scale
+
+    def chunk(tag, data):
+        c = tag + data
+        return struct.pack(">I", len(data)) + c + struct.pack(">I", zlib.crc32(c))
+
+    ihdr = struct.pack(">IIBBBBB", w, h, 8, 0, 0, 0, 0)  # bit_depth=8, color_type=0 (gray)
+
+    raw = bytearray()
+    for y in range(h):
+        src_y = y // scale
+        raw.append(0)  # filter type 0 (none) for this scanline
+        for x in range(w):
+            src_x = x // scale
+            raw.append(raw_bytes[src_y * cols + src_x])
+    idat = zlib.compress(bytes(raw), 9)
+
+    with open(path, "wb") as f:
+        f.write(b"\x89PNG\r\n\x1a\n")
+        f.write(chunk(b"IHDR", ihdr))
+        f.write(chunk(b"IDAT", idat))
+        f.write(chunk(b"IEND", b""))
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--index", type=int, default=0, help="MNIST test-set index to export")
+    ap.add_argument("--data-dir", default="data/MNIST/raw")
+    ap.add_argument("--export-dir", default="mnist_cnn_export")
+    ap.add_argument("--out-dir", default="mnist_fpga/mnist_fpga.srcs/sim_1/new",
+                     help="where the .mem files (read by RTL sim) are written")
+    ap.add_argument("--img-dir", default="images",
+                     help="where the viewable .png/.txt (not read by RTL) are written")
+    args = ap.parse_args()
+
+    os.makedirs(args.out_dir, exist_ok=True)
+    os.makedirs(args.img_dir, exist_ok=True)
+
+    rows, cols, raw = read_mnist_image(os.path.join(args.data_dir, "t10k-images-idx3-ubyte"), args.index)
+    label = read_mnist_label(os.path.join(args.data_dir, "t10k-labels-idx1-ubyte"), args.index)
+    print(f"MNIST test[{args.index}]: {rows}x{cols}, label={label}")
+
+    input_scale, weight_scale, bias_int32 = fit_input_scale(args.export_dir)
+    print(f"  fitted input_scale={input_scale:.8g} (weight_scale={weight_scale:.8g})")
+
+    q_pixels = [quantize_pixel(p, input_scale) for p in raw]
+    print(f"  quantized pixel range: [{min(q_pixels)}, {max(q_pixels)}] "
+          f"(raw byte range was [{min(raw)}, {max(raw)}])")
+
+    img_path = os.path.join(args.out_dir, "test_image.mem")
+    with open(img_path, "w") as f:
+        for q in q_pixels:
+            f.write(f"{q:02x}\n")
+    print(f"  wrote {img_path} ({len(q_pixels)} bytes, row-major addr = row*{cols}+col)")
+
+    weights = read_hex_mem(os.path.join(args.export_dir, "conv1_weights.mem"), signed_width=8)
+    golden = compute_golden_conv1(q_pixels, rows, cols, weights, bias_int32)
+
+    out_h, out_w = len(golden[0]), len(golden[0][0])
+    golden_path = os.path.join(args.out_dir, "test_image_golden_conv1.mem")
+    with open(golden_path, "w") as f:
+        for f_idx in range(16):
+            for y in range(out_h):
+                for x in range(out_w):
+                    f.write(f"{golden[f_idx][y][x]:08x}\n")
+    n_vals = 16 * out_h * out_w
+    nonzero = sum(1 for f_idx in range(16) for y in range(out_h) for x in range(out_w) if golden[f_idx][y][x] > 0)
+    all_vals = [golden[f_idx][y][x] for f_idx in range(16) for y in range(out_h) for x in range(out_w)]
+    print(f"  wrote {golden_path} ({n_vals} values, filter-major then row-major "
+          f"addr = filter*{out_h*out_w} + y*{out_w}+x)")
+    print(f"  golden conv1 output: {nonzero}/{n_vals} nonzero after ReLU, "
+          f"max={max(all_vals)}")
+
+    readable_path = os.path.join(args.img_dir, f"test_image_{args.index}_readable.txt")
+    with open(readable_path, "w") as f:
+        f.write(f"MNIST test-set index {args.index}, label={label}\n")
+        f.write(f"input_scale={input_scale:.8g}, zero_point=128 (quint8, matches conv1's calibration)\n\n")
+        f.write(ascii_art(raw, rows, cols))
+        f.write("\n")
+    print(f"  wrote {readable_path}")
+
+    png_path = os.path.join(args.img_dir, f"test_image_{args.index}.png")
+    write_png(png_path, raw, rows, cols)
+    print(f"  wrote {png_path} (raw grayscale, upscaled 10x for viewing)")
+
+    print()
+    print(ascii_art(raw, rows, cols))
+
+
+if __name__ == "__main__":
+    main()

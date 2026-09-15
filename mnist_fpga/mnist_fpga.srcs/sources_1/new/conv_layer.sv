@@ -5,6 +5,12 @@ module conv_layer(
     input logic rst_n,
     input logic en,
 
+    // Image load port -> conv_mem's img_mem (UART/top-level fills this in
+    // before en is pulsed)
+    input logic img_wr_en,
+    input logic [9:0] img_wr_addr,
+    input logic [7:0] img_wr_data,
+
     // Outputs to be determined later
     output logic calc_v,
     output logic [31:0] final_res,
@@ -72,9 +78,9 @@ module conv_layer(
         .filter_idx(filter_idx_ip),
         .filter_idx_v(wt_load_en),
 
-        .img_wr_en(),
-        .img_wr_addr(),
-        .img_wr_data(),
+        .img_wr_en(img_wr_en),
+        .img_wr_addr(img_wr_addr),
+        .img_wr_data(img_wr_data),
 
         .img_rd_addr(img_addrs),
         .img_addrs_v(img_addrs_v),
@@ -107,6 +113,8 @@ module conv_layer(
         .filter_addr(filter_addr)
     );
 
+    assign sweep_en = (state == CONV_FILTER) && (send_ctr < 576);
+
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
             state <= CONV_IDLE;
@@ -120,7 +128,6 @@ module conv_layer(
             filter_idx_ip <= 0;
             wt_load_sent <= 0;
             wt_load_en <= 0;
-            sweep_en <= 0;
             done <= 0;
 
             send_ctr <= 0;
@@ -136,6 +143,7 @@ module conv_layer(
                     filter_idx <= 0;
                     wt_load_sent <= 0;
                     wt_load_en <= 0;
+                    done <= 0;
 
                     send_ctr <= 0;
                     recv_ctr <= 0;
@@ -155,23 +163,20 @@ module conv_layer(
                     idx_x_reg <= IDX_MIN;
                     idx_y_reg <= IDX_MIN;
 
-                    if(filter_idx == NUM_FILTERS) begin
-                        // Every filter has been loaded and swept; nothing left to do
-                        wt_load_en <= 0;
-                        state <= CONV_DONE;
-                    end else begin
-                        if(!wt_load_sent) begin
+                    if(!wt_load_sent) begin
+                        if(filter_idx == NUM_FILTERS) begin
+                            wt_load_en <= 0;
+                            state <= CONV_DONE;
+                        end else begin
                             wt_load_en <= 1;
                             filter_idx_ip <= filter_idx[3:0];
                             filter_idx <= filter_idx + 1;
                             wt_load_sent <= 1;
-                        end else begin
-                            wt_load_en <= 0;
                         end
-
+                    end else begin
+                        wt_load_en <= 0;
                         if(wt_load_done) begin
                             state <= CONV_FILTER;
-                            sweep_en <= 1;
                         end
                     end
                 end
@@ -194,9 +199,6 @@ module conv_layer(
 
                     if(send_ctr < 576) begin
                         send_ctr <= send_ctr + 1;
-                        sweep_en <= 1;
-                    end else begin
-                        sweep_en <= 0;
                     end
 
                     if(calc_v) begin
@@ -218,7 +220,6 @@ module conv_layer(
 
                 CONV_DONE : begin
                     wt_load_en <= 0;
-                    sweep_en <= 0;
                     done <= 1;
                     state <= CONV_IDLE;
                 end

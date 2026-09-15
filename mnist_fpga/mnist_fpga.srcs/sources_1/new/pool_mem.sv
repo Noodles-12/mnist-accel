@@ -24,8 +24,8 @@ module pool_mem(
             logic [31:0] pool_mem [0:575];
 
             always_ff @ (posedge clk) begin
-                if(wr_en && wr_filter_adr == p) begin
-                    pool_mem[wr_filter_addr] <= wr_data;
+                if(wr_en && wr_filter_addr == p) begin
+                    pool_mem[wr_mem_addr] <= wr_data;
                 end
 
                 if(!rst_n) begin
@@ -43,7 +43,7 @@ module pool_mem(
             data_v <= 0;
         end else begin
             res_addr_op <= res_addr_ip;
-            dava_v <= rd_en;
+            data_v <= rd_en;
         end
     end
 endmodule

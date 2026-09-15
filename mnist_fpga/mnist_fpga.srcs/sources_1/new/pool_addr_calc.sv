@@ -60,10 +60,10 @@ module pool_addr_calc(
 
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
-            for(int i = 0; i < 3; i++)
+            for(int i = 0; i < 4; i++)
                 addr_op[i] <= 0;
         end else begin
-            for(int i = 0; i < 3; i++)
+            for(int i = 0; i < 4; i++)
                 addr_op[i] <= 24 * idx_ys[i] + idx_xs[i];
         end
     end

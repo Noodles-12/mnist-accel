@@ -123,7 +123,7 @@ module max_pool(
                         send_ctr <= send_ctr + 1;
                         comp_en <= 1;
                     end else begin
-                        comp_end <= 0;
+                        comp_en <= 0;
                     end
 
                     if(res_v)
