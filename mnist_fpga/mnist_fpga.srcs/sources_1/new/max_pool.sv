@@ -32,7 +32,7 @@ module max_pool(
     logic [9:0] addrs [3:0];
     logic [7:0] res_addr_a;
 
-    logic [9:0] pool_data [0:15][0:3];
+    logic [31:0] pool_data [0:15][0:3];
     logic [7:0] res_addr_b;
     logic data_v;
 
@@ -78,7 +78,7 @@ module max_pool(
         .data_v(data_v),
 
         .res(result),
-        .res_addr(res_addr),
+        .res_addr_op(res_addr),
         .res_v(res_v)
     );
 

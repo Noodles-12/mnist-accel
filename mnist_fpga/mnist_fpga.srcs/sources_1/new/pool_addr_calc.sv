@@ -16,9 +16,6 @@ module pool_addr_calc(
     logic [5:0] idx_xs [0:3];
     logic [5:0] idx_ys [0:3];
 
-    logic [5:0] res_addr_x;
-    logic [5:0] res_addr_y;
-
     logic comp_en_reg;
 
     always_ff @ (posedge clk) begin
@@ -31,15 +28,16 @@ module pool_addr_calc(
         end
     end
 
+    // res_addr must land the same cycle as addr_op -- both are one register
+    // stage from idx_xs[0]/idx_ys[0] (idx_xs[0] == 2*idx_x, so >>1 recovers
+    // idx_x directly). An extra intermediate stage here previously made
+    // res_addr lag addr_op (and the data it reads) by one cycle, tagging
+    // each result with the address of the *previous* window.
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
             res_addr <= 0;
-            res_addr_x <= 0;
-            res_addr_y <= 0;
         end else begin
-            res_addr_x <= idx_xs[0] >> 1;
-            res_addr_y <= idx_ys[0] >> 1;
-            res_addr <= 12 * res_addr_y + res_addr_x; // Add more guards for guaranteed 8 bit address
+            res_addr <= 12 * (idx_ys[0] >> 1) + (idx_xs[0] >> 1); // Add more guards for guaranteed 8 bit address
         end
     end
 
@@ -52,8 +50,8 @@ module pool_addr_calc(
                 idx_xs[i] <= 0;
                 idx_ys[i] <= 0;
             end else begin
-                idx_xs[i] <= idx_x + DX;
-                idx_ys[i] <= idx_y + DY;
+                idx_xs[i] <= 2 * idx_x + DX;
+                idx_ys[i] <= 2 * idx_y + DY;
             end
         end
     end : gen_pool_idx

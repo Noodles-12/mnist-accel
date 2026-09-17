@@ -116,6 +116,27 @@ def compute_golden_conv1(q_pixels, rows, cols, weights, bias_int32):
     return golden
 
 
+def compute_golden_pool(golden_conv1):
+    """2x2 non-overlapping max pool, stride 2, over each filter's 24x24
+    golden conv1 output -> 12x12. Matches pool_addr_calc's addressing
+    (window taps at 2*idx_x+DX, 2*idx_y+DY) once that's implemented
+    correctly."""
+    num_filters = len(golden_conv1)
+    out_h, out_w = len(golden_conv1[0]) // 2, len(golden_conv1[0][0]) // 2
+    pooled = [[[0] * out_w for _ in range(out_h)] for _ in range(num_filters)]
+    for f in range(num_filters):
+        for oy in range(out_h):
+            for ox in range(out_w):
+                window = [
+                    golden_conv1[f][2 * oy][2 * ox],
+                    golden_conv1[f][2 * oy][2 * ox + 1],
+                    golden_conv1[f][2 * oy + 1][2 * ox],
+                    golden_conv1[f][2 * oy + 1][2 * ox + 1],
+                ]
+                pooled[f][oy][ox] = max(window)
+    return pooled
+
+
 ASCII_RAMP = " .:-=+*#%@"
 
 
@@ -203,6 +224,18 @@ def main():
           f"addr = filter*{out_h*out_w} + y*{out_w}+x)")
     print(f"  golden conv1 output: {nonzero}/{n_vals} nonzero after ReLU, "
           f"max={max(all_vals)}")
+
+    pooled = compute_golden_pool(golden)
+    pool_h, pool_w = len(pooled[0]), len(pooled[0][0])
+    pool_path = os.path.join(args.out_dir, "test_image_golden_pool.mem")
+    with open(pool_path, "w") as f:
+        for f_idx in range(16):
+            for y in range(pool_h):
+                for x in range(pool_w):
+                    f.write(f"{pooled[f_idx][y][x]:08x}\n")
+    n_pool_vals = 16 * pool_h * pool_w
+    print(f"  wrote {pool_path} ({n_pool_vals} values, filter-major then row-major "
+          f"addr = filter*{pool_h*pool_w} + y*{pool_w}+x)")
 
     readable_path = os.path.join(args.img_dir, f"test_image_{args.index}_readable.txt")
     with open(readable_path, "w") as f:
