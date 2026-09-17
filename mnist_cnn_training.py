@@ -6,8 +6,11 @@ This script does three things:
      down to plain 8-bit integers (-128 to 127), so they're cheap for an
      FPGA to work with. This shrinking step is called "quantization."
   3. Saves those final integers to files your FPGA/Verilog project can
-     read directly.
- 
+     read directly, and prints the M0/shift requantization constants
+     you need for the hardware-side "requantize" step -- these are
+     single numbers, not arrays, so they're meant to be hardcoded
+     directly into your RTL as localparams, not loaded from a file.
+
 The network's shape (in order, first to last):
     28x28 pixel image comes in
     -> Conv layer: 16 small 5x5 "filters" slide over the image looking
@@ -182,6 +185,50 @@ def get_input_activation_scale(quantized_model):
     return None
 
 
+def get_layer_output_scale(layer, layer_name):
+    """
+    Attempts to read a quantized layer's own OUTPUT scale (i.e. the scale
+    of the values it produces, which becomes the next layer's input
+    scale). Tries a couple of known attribute paths since this varies by
+    PyTorch version -- same reasoning as get_input_activation_zero_point.
+    Returns None (with a warning) if nothing works, rather than silently
+    trusting an attribute that might mean something else.
+    """
+    candidate_paths = [
+        lambda l: float(l.scale),
+        lambda l: float(l.scale.item()),
+    ]
+    for get_scale in candidate_paths:
+        try:
+            val = get_scale(layer)
+            if val is not None and val > 0:
+                return val
+        except (AttributeError, TypeError):
+            continue
+
+    print(f"  [warn] could not confirm {layer_name}'s output scale directly -- "
+          f"downstream M0/shift constants for the layer consuming this "
+          f"output will be skipped. Verify manually if needed.")
+    return None
+
+
+def compute_requant_constants(weight_scale, input_scale, output_scale, mantissa_bits=16):
+    """
+    Computes the integer-only requantization constants M0 and shift such
+    that (accumulator * M0) >> shift approximates
+    accumulator * (weight_scale * input_scale / output_scale).
+
+    M0 and shift are single scalar constants for the whole layer (not
+    per-weight, not per-neuron) -- meant to be hardcoded directly as RTL
+    localparams (e.g. requantize #(.M0(...), .SHIFT_AMT(...))), not
+    loaded from a .mem file, since there's nothing array-shaped here.
+    """
+    M = (weight_scale * input_scale) / output_scale
+    M0 = round(M * (2 ** mantissa_bits))
+    approx_error_pct = abs((M0 / (2 ** mantissa_bits)) - M) / M * 100 if M != 0 else 0.0
+    return M0, mantissa_bits, M, approx_error_pct
+
+
 def check_shape(name, actual_shape, expected_shape):
     if tuple(actual_shape) != tuple(expected_shape):
         raise ExportCheckError(
@@ -234,11 +281,6 @@ def check_lane_reconstruction(lane_dir, num_filters, filter_size, original_flat_
 
 
 def export_bias(layer_name, bias_fp32, weight_scale, input_scale, out_dir):
-    """
-    Writes bias as plain fp32 text (human-checkable) and, if input_scale is
-    known, as int32 hex .mem (bias_scale = input_scale * weight_scale, the
-    standard convention so int32 accumulator + bias can add directly).
-    """
     txt_path = os.path.join(out_dir, f"{layer_name}_bias.txt")
     with open(txt_path, "w") as f:
         for v in bias_fp32:
@@ -260,7 +302,27 @@ def export_bias(layer_name, bias_fp32, weight_scale, input_scale, out_dir):
     print(f"  wrote {mem_path} (int32, bias_scale={bias_scale:.6g})")
 
 
-def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None):
+def print_requant_constants(layer_name, weight_scale, input_scale, output_scale):
+    """
+    Prints the M0/shift constants for one layer's hardware requantize
+    stage, ready to copy directly into RTL. Does not write any file --
+    these are single scalars meant to be hardcoded as localparams.
+    """
+    if input_scale is None or output_scale is None:
+        print(f"  [warn] {layer_name}: missing input_scale or output_scale -- "
+              f"cannot compute M0/shift. input_scale={input_scale}, "
+              f"output_scale={output_scale}")
+        return
+
+    M0, shift, M, err_pct = compute_requant_constants(weight_scale, input_scale, output_scale)
+    print(f"  {layer_name} requantize constants (hardcode these as RTL localparams):")
+    print(f"    M0 = {M0}")
+    print(f"    SHIFT_AMT = {shift}")
+    print(f"    (M={M:.8f}, approximation error={err_pct:.3f}%)")
+    print(f"    e.g. requantize #(.M0({M0}), .SHIFT_AMT({shift})) {layer_name}_requant (...);")
+
+
+def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None, output_scale=None):
     layer = getattr(quantized_model, layer_name)
     try:
         w, b = layer._weight_bias()
@@ -287,8 +349,10 @@ def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None):
 
     print(f"  {layer_name}: {w_int.shape} = {flat.size} weights, scale={w_scale:.6g}")
 
+    print_requant_constants(layer_name, w_scale, input_scale, output_scale)
 
-def export_conv1(quantized_model, out_dir, input_scale=None):
+
+def export_conv1(quantized_model, out_dir, input_scale=None, output_scale=None):
     print("\nExporting conv1 weights...")
     layer = quantized_model.conv1
     try:
@@ -347,6 +411,8 @@ def export_conv1(quantized_model, out_dir, input_scale=None):
     print(f"  wrote {mem_path}")
     print(f"  wrote {filter_size} lane files to {lane_dir}/conv_w_{{0..{filter_size-1}}}.mem")
 
+    print_requant_constants("conv1", w_scale, input_scale, output_scale)
+
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -390,15 +456,31 @@ def main():
         net_input_scale = get_input_activation_scale(quantized)
         if net_input_scale is None:
             print("  [warn] could not introspect input activation scale directly -- "
-                  "bias .mem files will be skipped (fp32 .txt/.npy still written).")
+                  "bias .mem files and M0/shift constants will be skipped where "
+                  "they depend on it.")
 
-        # Each layer's bias_scale needs *that layer's own input* activation scale
-        # (input_scale * weight_scale), not the network input scale. conv1's
-        # input is the network input; fc1's input is conv1's output (maxpool
-        # doesn't rescale); fc2's input is fc1's output.
-        export_conv1(quantized, args.out_dir, input_scale=net_input_scale)
-        export_dense_layer(quantized, "fc1", args.out_dir, input_scale=quantized.conv1.scale)
-        export_dense_layer(quantized, "fc2", args.out_dir, input_scale=quantized.fc1.scale)
+        # Each layer's own OUTPUT scale becomes the NEXT layer's input_scale.
+        # Fetched and printed explicitly (not just trusted silently) since
+        # this is exactly the kind of attribute-path assumption that has
+        # needed correcting before in this project (see
+        # get_input_activation_zero_point's multi-path fallback).
+        conv1_out_scale = get_layer_output_scale(quantized.conv1, "conv1")
+        fc1_out_scale = get_layer_output_scale(quantized.fc1, "fc1")
+        fc2_out_scale = get_layer_output_scale(quantized.fc2, "fc2")
+
+        print(f"\nScale chain (verify these look like reasonable, positive numbers "
+              f"typically in the 0.001-0.1 range for int8 quantization):")
+        print(f"  network input scale:  {net_input_scale}")
+        print(f"  conv1 output scale:   {conv1_out_scale}")
+        print(f"  fc1 output scale:     {fc1_out_scale}")
+        print(f"  fc2 output scale:     {fc2_out_scale}")
+
+        export_conv1(quantized, args.out_dir,
+                     input_scale=net_input_scale, output_scale=conv1_out_scale)
+        export_dense_layer(quantized, "fc1", args.out_dir,
+                           input_scale=conv1_out_scale, output_scale=fc1_out_scale)
+        export_dense_layer(quantized, "fc2", args.out_dir,
+                           input_scale=fc1_out_scale, output_scale=fc2_out_scale)
 
     except ExportCheckError as e:
         print(f"\n{e}")
@@ -407,6 +489,10 @@ def main():
         sys.exit(1)
 
     print(f"\nAll sanity checks passed. Export complete: {args.out_dir}/")
+    print(f"\nRemember: M0/SHIFT_AMT values printed above are meant to be hardcoded "
+          f"directly as RTL localparams in your requantize module instantiations -- "
+          f"no .mem file needed for them, since they're single per-layer constants, "
+          f"not arrays.")
 
 
 if __name__ == "__main__":
