@@ -5,7 +5,7 @@ module pool_mem(
     input logic rst_n,
 
     input logic wr_en,
-    input logic [31:0] wr_data,
+    input logic [7:0] wr_data,
     input logic [9:0] wr_mem_addr,
     input logic [3:0] wr_filter_addr,
 
@@ -13,7 +13,7 @@ module pool_mem(
     input logic rd_en,
     input logic [9:0] rd_addr [0:3],
 
-    output logic [31:0] rd_data [0:15][0:3],
+    output logic [7:0] rd_data [0:15][0:3],
     output logic [7:0] res_addr_op,
     output logic data_v
 );
@@ -21,7 +21,7 @@ module pool_mem(
     for(genvar p = 0; p < 16; p = p + 1) begin : gen_pool_mem
         for(genvar q = 0; q < 4; q = q + 1) begin : gen_clone
             (* ram_style = "block" *)
-            logic [31:0] pool_mem [0:575];
+            logic [7:0] pool_mem [0:575];
 
             always_ff @ (posedge clk) begin
                 if(wr_en && wr_filter_addr == p) begin

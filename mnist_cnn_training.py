@@ -212,16 +212,52 @@ def get_layer_output_scale(layer, layer_name):
     return None
 
 
+def get_layer_output_zero_point(layer, layer_name):
+    """
+    Same idea as get_layer_output_scale, but for the layer's own output
+    zero_point. This matters because compute_requant_constants only
+    produces the SCALING half of requantization (M0/shift) -- the
+    accumulator it operates on is zero-referenced (weights use
+    zero_point=0, and the activation-side "-128" offset was already
+    subtracted before the MAC), but the layer CONSUMING this output
+    (fc1 consuming conv1's output, fc2 consuming fc1's) was calibrated
+    expecting its input in the zero_point=128 domain -- the same
+    convention the network's own input already uses. Skipping the
+    zero_point add after the shift would leave every requantized
+    activation off by a constant 128 codes, not a small rounding error.
+    """
+    candidate_paths = [
+        lambda l: int(l.zero_point),
+        lambda l: int(l.zero_point.item()),
+    ]
+    for get_zp in candidate_paths:
+        try:
+            return get_zp(layer)
+        except (AttributeError, TypeError):
+            continue
+
+    print(f"  [warn] could not confirm {layer_name}'s output zero_point directly -- "
+          f"downstream M0/shift constants for the layer consuming this "
+          f"output will be skipped. Verify manually if needed.")
+    return None
+
+
 def compute_requant_constants(weight_scale, input_scale, output_scale, mantissa_bits=16):
     """
     Computes the integer-only requantization constants M0 and shift such
-    that (accumulator * M0) >> shift approximates
-    accumulator * (weight_scale * input_scale / output_scale).
+    that (accumulator * M0 + (1 << (shift-1))) >> shift approximates
+    round(accumulator * (weight_scale * input_scale / output_scale)) --
+    the "+ (1 << (shift-1))" is a rounding bias so the hardware shift
+    rounds to nearest instead of truncating toward -infinity.
 
     M0 and shift are single scalar constants for the whole layer (not
     per-weight, not per-neuron) -- meant to be hardcoded directly as RTL
     localparams (e.g. requantize #(.M0(...), .SHIFT_AMT(...))), not
     loaded from a .mem file, since there's nothing array-shaped here.
+
+    This is only the scaling half of requantization -- see
+    print_requant_constants for why the output zero_point still needs to
+    be added on top of this.
     """
     M = (weight_scale * input_scale) / output_scale
     M0 = round(M * (2 ** mantissa_bits))
@@ -302,11 +338,11 @@ def export_bias(layer_name, bias_fp32, weight_scale, input_scale, out_dir):
     print(f"  wrote {mem_path} (int32, bias_scale={bias_scale:.6g})")
 
 
-def print_requant_constants(layer_name, weight_scale, input_scale, output_scale):
+def print_requant_constants(layer_name, weight_scale, input_scale, output_scale, output_zero_point):
     """
-    Prints the M0/shift constants for one layer's hardware requantize
-    stage, ready to copy directly into RTL. Does not write any file --
-    these are single scalars meant to be hardcoded as localparams.
+    Prints the M0/shift/zero_point constants for one layer's hardware
+    requantize stage, ready to copy directly into RTL. Does not write any
+    file -- these are single scalars meant to be hardcoded as localparams.
     """
     if input_scale is None or output_scale is None:
         print(f"  [warn] {layer_name}: missing input_scale or output_scale -- "
@@ -314,15 +350,34 @@ def print_requant_constants(layer_name, weight_scale, input_scale, output_scale)
               f"output_scale={output_scale}")
         return
 
+    if output_zero_point is None:
+        print(f"  [warn] {layer_name}: missing output_zero_point -- cannot confirm "
+              f"the zero_point add needed after the shift. Verify manually.")
+        return
+
+    if output_zero_point != 128:
+        raise ExportCheckError(
+            f"[FAIL] {layer_name} output zero_point is {output_zero_point}, expected 128. "
+            f"The requantize formula below hardcodes +128 -- if this changed, that "
+            f"constant must change too."
+        )
+
     M0, shift, M, err_pct = compute_requant_constants(weight_scale, input_scale, output_scale)
+    round_bias = 1 << (shift - 1)
     print(f"  {layer_name} requantize constants (hardcode these as RTL localparams):")
     print(f"    M0 = {M0}")
     print(f"    SHIFT_AMT = {shift}")
+    print(f"    ZERO_POINT = {output_zero_point}")
     print(f"    (M={M:.8f}, approximation error={err_pct:.3f}%)")
-    print(f"    e.g. requantize #(.M0({M0}), .SHIFT_AMT({shift})) {layer_name}_requant (...);")
+    print(f"    hardware formula: q_out = ((accumulator * M0 + {round_bias}) >>> SHIFT_AMT) + ZERO_POINT")
+    print(f"    (the +{round_bias} rounds the shift to nearest instead of truncating; "
+          f"the >>> is an ARITHMETIC shift -- accumulator is signed)")
+    print(f"    clamp q_out to the output's valid range (e.g. [0,255] for quint8) before storing")
+    print(f"    e.g. requantize #(.M0({M0}), .SHIFT_AMT({shift}), .ZERO_POINT({output_zero_point})) {layer_name}_requant (...);")
 
 
-def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None, output_scale=None):
+def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None, output_scale=None,
+                        output_zero_point=None):
     layer = getattr(quantized_model, layer_name)
     try:
         w, b = layer._weight_bias()
@@ -349,10 +404,10 @@ def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None, o
 
     print(f"  {layer_name}: {w_int.shape} = {flat.size} weights, scale={w_scale:.6g}")
 
-    print_requant_constants(layer_name, w_scale, input_scale, output_scale)
+    print_requant_constants(layer_name, w_scale, input_scale, output_scale, output_zero_point)
 
 
-def export_conv1(quantized_model, out_dir, input_scale=None, output_scale=None):
+def export_conv1(quantized_model, out_dir, input_scale=None, output_scale=None, output_zero_point=None):
     print("\nExporting conv1 weights...")
     layer = quantized_model.conv1
     try:
@@ -411,7 +466,7 @@ def export_conv1(quantized_model, out_dir, input_scale=None, output_scale=None):
     print(f"  wrote {mem_path}")
     print(f"  wrote {filter_size} lane files to {lane_dir}/conv_w_{{0..{filter_size-1}}}.mem")
 
-    print_requant_constants("conv1", w_scale, input_scale, output_scale)
+    print_requant_constants("conv1", w_scale, input_scale, output_scale, output_zero_point)
 
 
 def main():
@@ -468,19 +523,32 @@ def main():
         fc1_out_scale = get_layer_output_scale(quantized.fc1, "fc1")
         fc2_out_scale = get_layer_output_scale(quantized.fc2, "fc2")
 
+        # The M0/shift constants only cover the SCALING half of
+        # requantization -- the accumulator they operate on is
+        # zero-referenced, but the layer consuming this output was
+        # calibrated expecting zero_point=128, same as the network's own
+        # input. Fetched and checked explicitly (== 128) rather than
+        # assumed, same reasoning as the scale fetches above.
+        conv1_out_zp = get_layer_output_zero_point(quantized.conv1, "conv1")
+        fc1_out_zp = get_layer_output_zero_point(quantized.fc1, "fc1")
+        fc2_out_zp = get_layer_output_zero_point(quantized.fc2, "fc2")
+
         print(f"\nScale chain (verify these look like reasonable, positive numbers "
               f"typically in the 0.001-0.1 range for int8 quantization):")
         print(f"  network input scale:  {net_input_scale}")
-        print(f"  conv1 output scale:   {conv1_out_scale}")
-        print(f"  fc1 output scale:     {fc1_out_scale}")
-        print(f"  fc2 output scale:     {fc2_out_scale}")
+        print(f"  conv1 output scale:   {conv1_out_scale}  (zero_point={conv1_out_zp})")
+        print(f"  fc1 output scale:     {fc1_out_scale}  (zero_point={fc1_out_zp})")
+        print(f"  fc2 output scale:     {fc2_out_scale}  (zero_point={fc2_out_zp})")
 
         export_conv1(quantized, args.out_dir,
-                     input_scale=net_input_scale, output_scale=conv1_out_scale)
+                     input_scale=net_input_scale, output_scale=conv1_out_scale,
+                     output_zero_point=conv1_out_zp)
         export_dense_layer(quantized, "fc1", args.out_dir,
-                           input_scale=conv1_out_scale, output_scale=fc1_out_scale)
+                           input_scale=conv1_out_scale, output_scale=fc1_out_scale,
+                           output_zero_point=fc1_out_zp)
         export_dense_layer(quantized, "fc2", args.out_dir,
-                           input_scale=fc1_out_scale, output_scale=fc2_out_scale)
+                           input_scale=fc1_out_scale, output_scale=fc2_out_scale,
+                           output_zero_point=fc2_out_zp)
 
     except ExportCheckError as e:
         print(f"\n{e}")

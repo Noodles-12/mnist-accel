@@ -2,7 +2,10 @@
 
 module conv_dp#(
     parameter int NUM_LANES = 25,
-    parameter int NUM_FILTERS = 16
+    parameter int NUM_FILTERS = 16,
+    parameter int REQUANT_M0 = 77,
+    parameter int REQUANT_SHIFT = 16,
+    parameter int REQUANT_ZERO_POINT = 128
 )(
     input logic clk,
     input logic rst_n,
@@ -21,7 +24,7 @@ module conv_dp#(
     // Signal to tell conv_layer FSM to move to CONV_FILTER
     output logic wt_load_done,                      // here -> conv_layer FSM : MACs latched weights
     output logic calc_v,
-    output logic [31:0] final_res,
+    output logic [7:0] final_res,
     output logic [9:0] res_addr,
     output logic [3:0] filter_addr
 );
@@ -42,10 +45,11 @@ module conv_dp#(
     logic signed [19:0] adder4_op [0:1];
     logic signed [20:0] adder_fin;
     logic signed [31:0] biased_res;
+    logic signed [31:0] relu_res;
 
     // Cycles from the area_pixel_v / out_addr inputs through to final_res:
-    // 1 corrected_actv + 2 mac_unit + 5 adder tree + 1 bias + 1 relu
-    localparam int DP_LATENCY = 10;
+    // 1 corrected_actv + 2 mac_unit + 5 adder tree + 1 bias + 1 relu + 1 requantize
+    localparam int DP_LATENCY = 11;
 
     logic calc_v_pipe [0:DP_LATENCY-1];             // area_pixel_v walked alongside the data
     logic [9:0] res_addr_pipe [0:DP_LATENCY-1];     // out_addr walked alongside the data
@@ -172,12 +176,42 @@ module conv_dp#(
     // ReLu
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
-            final_res <= '0;
+            relu_res <= '0;
         end else begin
             if(biased_res > 0)
-                final_res <= biased_res;
+                relu_res <= biased_res;
             else
-                final_res <= '0;
+                relu_res <= '0;
+        end
+    end
+
+    // Requantize
+    logic signed [63:0] requant_prod;
+    logic signed [31:0] requant_shifted;
+    logic signed [31:0] requant_offset;
+    logic [7:0] requant_clamped;
+
+    localparam logic signed [63:0] REQUANT_ROUND_BIAS =
+        (REQUANT_SHIFT > 0) ? (64'sd1 <<< (REQUANT_SHIFT - 1)) : 64'sd0;
+
+    always_comb begin
+        requant_prod    = relu_res * REQUANT_M0 + REQUANT_ROUND_BIAS;
+        requant_shifted = requant_prod >>> REQUANT_SHIFT;
+        requant_offset  = requant_shifted + REQUANT_ZERO_POINT;
+
+        if(requant_offset > 255)
+            requant_clamped = 8'd255;
+        else if(requant_offset < 0)
+            requant_clamped = 8'd0;
+        else
+            requant_clamped = requant_offset[7:0];
+    end
+
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            final_res <= '0;
+        end else begin
+            final_res <= requant_clamped;
         end
     end
 

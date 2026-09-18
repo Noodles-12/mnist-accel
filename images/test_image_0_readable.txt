@@ -1,5 +1,5 @@
 MNIST test-set index 0, label=7
-input_scale=0.007843398, zero_point=128 (quint8, matches conv1's calibration)
+input_scale=0.0078428424, zero_point=128 (quint8, matches conv1's calibration)
 
                             
                             

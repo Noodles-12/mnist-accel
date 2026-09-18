@@ -112,8 +112,20 @@ def compute_golden_conv1(q_pixels, rows, cols, weights, bias_int32):
                     for kx in range(ksize):
                         acc += wrow[kx] * (q_pixels[base + kx] - 128)
                 acc += bias_int32[f]
-                golden[f][oy][ox] = acc if acc > 0 else 0
+                relu_val = acc if acc > 0 else 0
+                golden[f][oy][ox] = requantize(relu_val)
     return golden
+
+
+REQUANT_M0 = 77
+REQUANT_SHIFT = 16
+REQUANT_ZERO_POINT = 128
+
+
+def requantize(relu_val, m0=REQUANT_M0, shift=REQUANT_SHIFT, zero_point=REQUANT_ZERO_POINT):
+    round_bias = 1 << (shift - 1) if shift > 0 else 0
+    shifted = (relu_val * m0 + round_bias) >> shift
+    return max(0, min(255, shifted + zero_point))
 
 
 def compute_golden_pool(golden_conv1):
@@ -181,8 +193,9 @@ def main():
     ap.add_argument("--index", type=int, default=0, help="MNIST test-set index to export")
     ap.add_argument("--data-dir", default="data/MNIST/raw")
     ap.add_argument("--export-dir", default="mnist_cnn_export")
-    ap.add_argument("--out-dir", default="mnist_fpga/mnist_fpga.srcs/sim_1/new",
-                     help="where the .mem files (read by RTL sim) are written")
+    ap.add_argument("--out-dir", default="mnist_cnn_export",
+                     help="where the .mem files (read by RTL sim, via a symlink into "
+                          "sim_1/new/) are written")
     ap.add_argument("--img-dir", default="images",
                      help="where the viewable .png/.txt (not read by RTL) are written")
     args = ap.parse_args()
@@ -218,12 +231,12 @@ def main():
                 for x in range(out_w):
                     f.write(f"{golden[f_idx][y][x]:08x}\n")
     n_vals = 16 * out_h * out_w
-    nonzero = sum(1 for f_idx in range(16) for y in range(out_h) for x in range(out_w) if golden[f_idx][y][x] > 0)
     all_vals = [golden[f_idx][y][x] for f_idx in range(16) for y in range(out_h) for x in range(out_w)]
+    above_floor = sum(1 for v in all_vals if v > REQUANT_ZERO_POINT)
     print(f"  wrote {golden_path} ({n_vals} values, filter-major then row-major "
           f"addr = filter*{out_h*out_w} + y*{out_w}+x)")
-    print(f"  golden conv1 output: {nonzero}/{n_vals} nonzero after ReLU, "
-          f"max={max(all_vals)}")
+    print(f"  golden conv1 output: {above_floor}/{n_vals} above the relu floor "
+          f"({REQUANT_ZERO_POINT}), max={max(all_vals)}")
 
     pooled = compute_golden_pool(golden)
     pool_h, pool_w = len(pooled[0]), len(pooled[0][0])

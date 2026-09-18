@@ -14,13 +14,9 @@ module top_tb();
     logic [9:0] img_wr_addr;
     logic [7:0] img_wr_data;
 
-    logic [31:0] pool_result [0:15];
+    logic [7:0] pool_result [0:15];
     logic [7:0] pool_res_addr;
     logic pool_res_v;
-
-    logic [3:0] flat_rd_block_addr;
-    logic [7:0] flat_rd_idx_addr;
-    logic [31:0] flat_rd_data;
 
     logic done;
 
@@ -36,10 +32,6 @@ module top_tb();
         .pool_result(pool_result),
         .pool_res_addr(pool_res_addr),
         .pool_res_v(pool_res_v),
-
-        .flat_rd_block_addr(flat_rd_block_addr),
-        .flat_rd_idx_addr(flat_rd_idx_addr),
-        .flat_rd_data(flat_rd_data),
 
         .done(done)
     );
@@ -57,8 +49,6 @@ module top_tb();
     initial begin
         rst_n = 0;
         start = 0;
-        flat_rd_block_addr = 0;
-        flat_rd_idx_addr = 0;
         repeat(3) @(posedge clk);
         rst_n = 1;
 
@@ -101,7 +91,7 @@ module top_tb();
             conv_row_q.push_back(dut.conv_final_res);
             if (conv_row_q.size() == CONV_GRID) begin
                 $write("  row %2d:", row);
-                foreach (conv_row_q[i]) $write(" %7d", conv_row_q[i]);
+                foreach (conv_row_q[i]) $write(" %3d", conv_row_q[i]);
                 $write("\n");
                 conv_row_q.delete();
             end
@@ -133,36 +123,16 @@ module top_tb();
                         $error("POOL mismatch f=%0d row=%0d col=%0d rtl=%0d golden=%0d",
                                f, row, col, pool_result[f], golden_v);
                 end
-                $write(" %7d", pool_result[f]);
+                $write(" %3d", pool_result[f]);
             end
             $write("\n");
             pool_per_addr_count++;
         end
     end
 
-    int flat_total = 0;
-    int flat_errors = 0;
-
     initial begin
         wait (done == 1'b1);
         repeat(5) @(posedge clk);
-
-        for (int a = 0; a < POOL_GRID*POOL_GRID; a++) begin
-            for (int c = 0; c < NUM_FILTERS; c++) begin
-                automatic int unsigned golden_v;
-                flat_rd_block_addr = c;
-                flat_rd_idx_addr = a;
-                @(posedge clk); #1;
-                golden_v = pool_golden[c*POOL_GRID*POOL_GRID + a];
-                if (flat_rd_data != golden_v) begin
-                    flat_errors++;
-                    if (flat_errors <= 10)
-                        $error("FLATTEN mismatch addr=%0d c=%0d rtl=%0d golden=%0d",
-                               a, c, flat_rd_data, golden_v);
-                end
-                flat_total++;
-            end
-        end
 
         $display("\n=== conv1 stage ===");
         $display("conv1: %0d/%0d results captured, %0d mismatches",
@@ -177,15 +147,10 @@ module top_tb();
         if (pool_per_addr_count != POOL_GRID * POOL_GRID)
             $display("  [warn] only %0d/%0d pool addresses seen", pool_per_addr_count, POOL_GRID*POOL_GRID);
 
-        $display("\n=== flatten stage ===");
-        $display("flatten: %0d/%0d reads checked, %0d mismatches",
-                  flat_total, POOL_GRID*POOL_GRID*NUM_FILTERS, flat_errors);
-
-        if (conv_errors == 0 && pool_errors == 0 && flat_errors == 0
+        if (conv_errors == 0 && pool_errors == 0
             && conv_total == NUM_FILTERS*CONV_GRID*CONV_GRID
-            && pool_total == NUM_FILTERS*POOL_GRID*POOL_GRID
-            && flat_total == POOL_GRID*POOL_GRID*NUM_FILTERS)
-            $display("\nPASS: all three stages match golden exactly");
+            && pool_total == NUM_FILTERS*POOL_GRID*POOL_GRID)
+            $display("\nPASS: both stages match golden exactly");
         else
             $display("\nFAIL: see mismatches/warnings above");
 

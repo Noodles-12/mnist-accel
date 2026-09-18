@@ -21,9 +21,24 @@ module fc1_layer(
     logic [3:0] rd_block_addr;
     logic [7:0] rd_idx_addr;
     logic [31:0] rd_data;
-    logic [11:0] wt_idx_addr; // weight address to get
-    logic [7:0] neuron_addr; // neuron address to get
+
+    logic [11:0] wt_ip_addr; // weight address to get
+    logic [7:0] neuron_idx; // neuron address to get
     logic calc_en;
+
+    fc1_addr_calc fc1ac(
+        .clk(clk),
+        .rst_n(rst_n),
+
+        .block_addr(rd_block_addr),
+        .idx_addr(rd_idx_addr),
+        .wt_ip_addr(wt_ip_addr),
+        .neuron_idx(neuron_idx),
+
+        .weight_addr_op(),
+        .block_addr_op(),
+        .idx_addr_op()
+    );
 
     fc1_mem fc1mem(
         .clk(clk),

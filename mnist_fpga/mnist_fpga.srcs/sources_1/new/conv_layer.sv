@@ -13,7 +13,7 @@ module conv_layer(
 
     // Outputs to be determined later
     output logic calc_v,
-    output logic [31:0] final_res,
+    output logic [7:0] final_res,
     output logic [9:0] res_addr,
     output logic [3:0] filter_addr,
     output logic done

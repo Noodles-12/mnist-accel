@@ -28,11 +28,6 @@ module pool_addr_calc(
         end
     end
 
-    // res_addr must land the same cycle as addr_op -- both are one register
-    // stage from idx_xs[0]/idx_ys[0] (idx_xs[0] == 2*idx_x, so >>1 recovers
-    // idx_x directly). An extra intermediate stage here previously made
-    // res_addr lag addr_op (and the data it reads) by one cycle, tagging
-    // each result with the address of the *previous* window.
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
             res_addr <= 0;

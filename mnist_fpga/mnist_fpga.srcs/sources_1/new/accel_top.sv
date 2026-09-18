@@ -9,13 +9,9 @@ module accel_top(
     input logic [9:0] img_wr_addr,
     input logic [7:0] img_wr_data,
 
-    output logic [31:0] pool_result [0:15],
+    output logic [7:0] pool_result [0:15],
     output logic [7:0] pool_res_addr,
     output logic pool_res_v,
-
-    input  logic [3:0]  flat_rd_block_addr,
-    input  logic [7:0]  flat_rd_idx_addr,
-    output logic [31:0] flat_rd_data,
 
     output logic done
 );
@@ -26,7 +22,6 @@ module accel_top(
         TOP_CONV_WAIT,    // wait for conv_layer.done
         TOP_POOL_GO,      // pulse max_pool.en for exactly one cycle
         TOP_POOL_WAIT,    // wait for max_pool.done
-        TOP_FLATTEN_WAIT, // wait for flatten_layer.done
         TOP_DONE
     } top_state;
 
@@ -34,15 +29,13 @@ module accel_top(
 
     logic conv_en;
     logic conv_calc_v;
-    logic [31:0] conv_final_res;
+    logic [7:0] conv_final_res;
     logic [9:0]  conv_res_addr;
     logic [3:0]  conv_filter_addr;
     logic conv_done;
 
     logic pool_en;
     logic pool_done;
-
-    logic flatten_done;
 
     conv_layer conv(
         .clk(clk),
@@ -74,21 +67,6 @@ module accel_top(
         .res_addr(pool_res_addr),
         .res_v(pool_res_v),
         .done(pool_done)
-    );
-
-    flatten_layer flatten(
-        .clk(clk),
-        .rst_n(rst_n),
-
-        .pool_result(pool_result),
-        .pool_res_addr(pool_res_addr),
-        .pool_res_v(pool_res_v),
-
-        .rd_block_addr(flat_rd_block_addr),
-        .rd_idx_addr(flat_rd_idx_addr),
-        .rd_data(flat_rd_data),
-
-        .done(flatten_done)
     );
 
     always_ff @ (posedge clk) begin
@@ -125,11 +103,6 @@ module accel_top(
 
                 TOP_POOL_WAIT : begin
                     if(pool_done)
-                        state <= TOP_FLATTEN_WAIT;
-                end
-
-                TOP_FLATTEN_WAIT : begin
-                    if(flatten_done)
                         state <= TOP_DONE;
                 end
 

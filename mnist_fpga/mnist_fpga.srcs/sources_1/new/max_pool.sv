@@ -6,11 +6,11 @@ module max_pool(
     input logic en,
 
     input logic wr_en,
-    input logic [31:0] wr_data,
+    input logic [7:0] wr_data,
     input logic [9:0] wr_mem_addr,
     input logic [3:0] wr_filter_addr,
 
-    output logic [31:0] result [0:15],
+    output logic [7:0] result [0:15],
     output logic [7:0] res_addr,
     output logic res_v,
     output logic done
@@ -32,7 +32,7 @@ module max_pool(
     logic [9:0] addrs [3:0];
     logic [7:0] res_addr_a;
 
-    logic [31:0] pool_data [0:15][0:3];
+    logic [7:0] pool_data [0:15][0:3];
     logic [7:0] res_addr_b;
     logic data_v;
 
