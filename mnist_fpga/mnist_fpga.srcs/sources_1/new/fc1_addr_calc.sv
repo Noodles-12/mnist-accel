@@ -8,9 +8,9 @@ module fc1_addr_calc(
     input logic [7:0] idx_addr,
 
     input logic [11:0] wt_ip_addr,
-    input logic [7:0] neuron_idx,
+    input logic [1:0] phase_idx,
 
-    output logic [17:0] weight_addr_op,
+    output logic [13:0] weight_addr_op,
     output logic [3:0] block_addr_op,
     output logic [7:0] idx_addr_op
 );
@@ -21,7 +21,7 @@ module fc1_addr_calc(
             block_addr_op <= '0;
             idx_addr_op <= '0;
         end else begin
-            weight_addr_op <= 2304 * neuron_idx + wt_ip_addr;
+            weight_addr_op <= 2304 * phase_idx + wt_ip_addr;
             block_addr_op <= block_addr;
             idx_addr_op <= idx_addr;
         end

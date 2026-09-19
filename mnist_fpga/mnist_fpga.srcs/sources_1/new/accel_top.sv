@@ -13,6 +13,10 @@ module accel_top(
     output logic [7:0] pool_res_addr,
     output logic pool_res_v,
 
+    output logic [7:0] fc1_res [0:15],
+    output logic [7:0] fc1_res_addr [0:15],
+    output logic fc1_res_v,
+
     output logic done
 );
 
@@ -22,6 +26,8 @@ module accel_top(
         TOP_CONV_WAIT,    // wait for conv_layer.done
         TOP_POOL_GO,      // pulse max_pool.en for exactly one cycle
         TOP_POOL_WAIT,    // wait for max_pool.done
+        TOP_FC1_GO,       // pulse fc1_layer.en for exactly one cycle
+        TOP_FC1_WAIT,     // wait for fc1_layer.done
         TOP_DONE
     } top_state;
 
@@ -36,6 +42,9 @@ module accel_top(
 
     logic pool_en;
     logic pool_done;
+
+    logic fc1_en;
+    logic fc1_done;
 
     conv_layer conv(
         .clk(clk),
@@ -69,15 +78,32 @@ module accel_top(
         .done(pool_done)
     );
 
+    fc1_layer fc1(
+        .clk(clk),
+        .rst_n(rst_n),
+        .en(fc1_en),
+
+        .pool_result(pool_result),
+        .pool_res_addr(pool_res_addr),
+        .pool_res_v(pool_res_v),
+
+        .res(fc1_res),
+        .res_addr(fc1_res_addr),
+        .res_v(fc1_res_v),
+        .done(fc1_done)
+    );
+
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
             state <= TOP_IDLE;
             conv_en <= 0;
             pool_en <= 0;
+            fc1_en <= 0;
             done <= 0;
         end else begin
             conv_en <= 0;   // single-cycle pulses; deassert unless a GO state below sets them
             pool_en <= 0;
+            fc1_en <= 0;
 
             unique case(state)
                 TOP_IDLE : begin
@@ -103,6 +129,16 @@ module accel_top(
 
                 TOP_POOL_WAIT : begin
                     if(pool_done)
+                        state <= TOP_FC1_GO;
+                end
+
+                TOP_FC1_GO : begin
+                    fc1_en <= 1;
+                    state  <= TOP_FC1_WAIT;
+                end
+
+                TOP_FC1_WAIT : begin
+                    if(fc1_done)
                         state <= TOP_DONE;
                 end
 

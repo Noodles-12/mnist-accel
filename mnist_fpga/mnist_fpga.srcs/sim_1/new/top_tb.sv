@@ -18,6 +18,10 @@ module top_tb();
     logic [7:0] pool_res_addr;
     logic pool_res_v;
 
+    logic [7:0] fc1_res [0:15];
+    logic [7:0] fc1_res_addr [0:15];
+    logic fc1_res_v;
+
     logic done;
 
     accel_top dut(
@@ -32,6 +36,10 @@ module top_tb();
         .pool_result(pool_result),
         .pool_res_addr(pool_res_addr),
         .pool_res_v(pool_res_v),
+
+        .fc1_res(fc1_res),
+        .fc1_res_addr(fc1_res_addr),
+        .fc1_res_v(fc1_res_v),
 
         .done(done)
     );
@@ -130,6 +138,45 @@ module top_tb();
         end
     end
 
+    localparam int NUM_NEURONS = 64;
+    int unsigned fc1_golden [0:NUM_NEURONS-1];
+    initial $readmemh("test_image_golden_fc1.mem", fc1_golden);
+
+    int unsigned fc1_captured [0:NUM_NEURONS-1];
+    logic fc1_seen [0:NUM_NEURONS-1];
+    int fc1_total = 0;
+    int fc1_errors = 0;
+
+    initial
+        for (int n = 0; n < NUM_NEURONS; n++) fc1_seen[n] = 0;
+
+    always @ (posedge clk) begin
+        if (rst_n && fc1_res_v) begin
+            for (int l = 0; l < NUM_FILTERS; l++) begin
+                automatic int a = fc1_res_addr[l];
+                if (a >= NUM_NEURONS) begin
+                    $error("FC1 res_addr out of range: lane=%0d addr=%0d", l, a);
+                    fc1_errors++;
+                end else begin
+                    if (fc1_seen[a]) begin
+                        $error("FC1 neuron %0d produced twice (lane %0d)", a, l);
+                        fc1_errors++;
+                    end
+                    fc1_captured[a] = fc1_res[l];
+                    fc1_seen[a] = 1;
+                    fc1_total++;
+
+                    if (fc1_res[l] != fc1_golden[a]) begin
+                        fc1_errors++;
+                        if (fc1_errors <= 10)
+                            $error("FC1 mismatch lane=%0d neuron=%0d rtl=%0d golden=%0d",
+                                   l, a, fc1_res[l], fc1_golden[a]);
+                    end
+                end
+            end
+        end
+    end
+
     initial begin
         wait (done == 1'b1);
         repeat(5) @(posedge clk);
@@ -147,10 +194,20 @@ module top_tb();
         if (pool_per_addr_count != POOL_GRID * POOL_GRID)
             $display("  [warn] only %0d/%0d pool addresses seen", pool_per_addr_count, POOL_GRID*POOL_GRID);
 
-        if (conv_errors == 0 && pool_errors == 0
+        $display("\n=== fc1 stage ===");
+        $display("fc1: %0d/%0d results captured, %0d mismatches",
+                  fc1_total, NUM_NEURONS, fc1_errors);
+        for (int n = 0; n < NUM_NEURONS; n++)
+            if (!fc1_seen[n]) begin
+                $display("  [warn] neuron %0d never produced a result", n);
+                fc1_errors++;
+            end
+
+        if (conv_errors == 0 && pool_errors == 0 && fc1_errors == 0
             && conv_total == NUM_FILTERS*CONV_GRID*CONV_GRID
-            && pool_total == NUM_FILTERS*POOL_GRID*POOL_GRID)
-            $display("\nPASS: both stages match golden exactly");
+            && pool_total == NUM_FILTERS*POOL_GRID*POOL_GRID
+            && fc1_total == NUM_NEURONS)
+            $display("\nPASS: all three stages match golden exactly");
         else
             $display("\nFAIL: see mismatches/warnings above");
 

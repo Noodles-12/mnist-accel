@@ -376,6 +376,46 @@ def print_requant_constants(layer_name, weight_scale, input_scale, output_scale,
     print(f"    e.g. requantize #(.M0({M0}), .SHIFT_AMT({shift}), .ZERO_POINT({output_zero_point})) {layer_name}_requant (...);")
 
 
+def check_fc1_lane_reconstruction(lane_dir, num_lanes, per_lane, original_flat):
+    rebuilt = []
+    for l in range(num_lanes):
+        lane_path = os.path.join(lane_dir, f"fc1_w_{l}.mem")
+        with open(lane_path) as f:
+            lines = [x.strip() for x in f if x.strip()]
+        if len(lines) != per_lane:
+            raise ExportCheckError(
+                f"[FAIL] {lane_path} has {len(lines)} lines, expected {per_lane}"
+            )
+        for x in lines:
+            v = int(x, 16)
+            rebuilt.append(v - 256 if v >= 128 else v)
+
+    if not np.array_equal(np.array(rebuilt, dtype=np.int32), original_flat.astype(np.int32)):
+        raise ExportCheckError(
+            "[FAIL] fc1 lane files do not reconstruct the original weight order -- "
+            "check the neuron-chunk slicing."
+        )
+    print(f"  [ok] {num_lanes} fc1 lane files reconstruct fc1_weights.mem exactly")
+
+
+def export_fc1_lanes(flat, out_dir, num_lanes=16, num_neurons=64, weights_per_neuron=2304):
+    neurons_per_lane = num_neurons // num_lanes
+    per_lane = neurons_per_lane * weights_per_neuron
+
+    lane_dir = os.path.join(out_dir, "fc1_lanes")
+    os.makedirs(lane_dir, exist_ok=True)
+
+    for l in range(num_lanes):
+        lane_path = os.path.join(lane_dir, f"fc1_w_{l}.mem")
+        with open(lane_path, "w") as f:
+            for v in flat[l * per_lane:(l + 1) * per_lane]:
+                f.write(f"{int(v) & 0xFF:02x}\n")
+
+    check_fc1_lane_reconstruction(lane_dir, num_lanes, per_lane, flat)
+    print(f"  wrote {num_lanes} fc1 lane files to {lane_dir}/fc1_w_{{0..{num_lanes-1}}}.mem "
+          f"({per_lane} weights each = neurons {neurons_per_lane}*lane .. +{neurons_per_lane-1})")
+
+
 def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None, output_scale=None,
                         output_zero_point=None):
     layer = getattr(quantized_model, layer_name)
@@ -403,6 +443,9 @@ def export_dense_layer(quantized_model, layer_name, out_dir, input_scale=None, o
     export_bias(layer_name, bias_fp32, w_scale, input_scale, out_dir)
 
     print(f"  {layer_name}: {w_int.shape} = {flat.size} weights, scale={w_scale:.6g}")
+
+    if layer_name == "fc1":
+        export_fc1_lanes(flat, out_dir)
 
     print_requant_constants(layer_name, w_scale, input_scale, output_scale, output_zero_point)
 

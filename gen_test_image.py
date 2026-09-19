@@ -128,6 +128,33 @@ def requantize(relu_val, m0=REQUANT_M0, shift=REQUANT_SHIFT, zero_point=REQUANT_
     return max(0, min(255, shifted + zero_point))
 
 
+FC1_REQUANT_M0 = 45
+FC1_REQUANT_SHIFT = 16
+FC1_REQUANT_ZERO_POINT = 128
+
+
+def requantize_fc1(relu_val):
+    round_bias = 1 << (FC1_REQUANT_SHIFT - 1) if FC1_REQUANT_SHIFT > 0 else 0
+    shifted = (relu_val * FC1_REQUANT_M0 + round_bias) >> FC1_REQUANT_SHIFT
+    return max(0, min(255, shifted + FC1_REQUANT_ZERO_POINT))
+
+
+def compute_golden_fc1(pooled, fc1_weights, fc1_bias_int32,
+                        num_neurons=64, num_channels=16, spatial=144):
+    per_neuron = num_channels * spatial
+    out = []
+    for n in range(num_neurons):
+        acc = 0
+        for c in range(num_channels):
+            wbase = n * per_neuron + c * spatial
+            for s in range(spatial):
+                acc += fc1_weights[wbase + s] * (pooled[c][s // 12][s % 12] - 128)
+        acc += fc1_bias_int32[n]
+        relu_val = acc if acc > 0 else 0
+        out.append(requantize_fc1(relu_val))
+    return out
+
+
 def compute_golden_pool(golden_conv1):
     """2x2 non-overlapping max pool, stride 2, over each filter's 24x24
     golden conv1 output -> 12x12. Matches pool_addr_calc's addressing
@@ -249,6 +276,17 @@ def main():
     n_pool_vals = 16 * pool_h * pool_w
     print(f"  wrote {pool_path} ({n_pool_vals} values, filter-major then row-major "
           f"addr = filter*{pool_h*pool_w} + y*{pool_w}+x)")
+
+    fc1_weights = read_hex_mem(os.path.join(args.export_dir, "fc1_weights.mem"), signed_width=8)
+    fc1_bias = read_hex_mem(os.path.join(args.export_dir, "fc1_bias.mem"), signed_width=32)
+    fc1_out = compute_golden_fc1(pooled, fc1_weights, fc1_bias)
+    fc1_path = os.path.join(args.out_dir, "test_image_golden_fc1.mem")
+    with open(fc1_path, "w") as f:
+        for v in fc1_out:
+            f.write(f"{v:02x}\n")
+    print(f"  wrote {fc1_path} ({len(fc1_out)} values, one per neuron)")
+    print(f"  golden fc1 output: {sum(1 for v in fc1_out if v > FC1_REQUANT_ZERO_POINT)}/{len(fc1_out)} "
+          f"above the relu floor ({FC1_REQUANT_ZERO_POINT}), max={max(fc1_out)}")
 
     readable_path = os.path.join(args.img_dir, f"test_image_{args.index}_readable.txt")
     with open(readable_path, "w") as f:
