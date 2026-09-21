@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
 module argmax_layer(
-    input logic clk
+    input logic clk,
     input logic rst_n,
-    input logic en
+    input logic en,
 
     input logic signed [15:0] data_in [0:9],
     input logic data_v,
@@ -12,7 +12,7 @@ module argmax_layer(
     output logic wr_v,
 
     output logic [3:0] res,
-    output logic res_v,
+    output logic res_v
 );
 
     logic signed [15:0] data [0:9];
