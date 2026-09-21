@@ -12,7 +12,8 @@ module fc2_mem(
     input logic rd_v,
 
     output logic signed [7:0] rd_weights [0:9],
-    output logic [7:0] rd_data
+    output logic [7:0] rd_data,
+    output logic data_v
 );
 
     // Trying to not inference BRAM with this (LUTRAM or whatever has parallel writes)
@@ -44,6 +45,16 @@ module fc2_mem(
             end else begin
                 rd_weight[p] <= weights[p][rd_addr];
             end
+        end
+    end
+
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            rd_data <= '0;
+            data_v <= '0;
+        end else begin
+            rd_data <= memory[rd_addr];
+            data_v <= rd_v;
         end
     end
 endmodule
