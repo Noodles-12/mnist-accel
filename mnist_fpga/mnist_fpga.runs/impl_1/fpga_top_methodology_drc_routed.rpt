@@ -1,0 +1,951 @@
+Copyright 1986-2022 Xilinx, Inc. All Rights Reserved. Copyright 2022-2025 Advanced Micro Devices, Inc. All Rights Reserved.
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2025.2 (lin64) Build 6299465 Fri Nov 14 12:34:56 MST 2025
+| Date         : Mon Sep 21 21:47:13 2026
+| Host         : spark running 64-bit Ubuntu 26.04.1 LTS
+| Command      : report_methodology -file fpga_top_methodology_drc_routed.rpt -pb fpga_top_methodology_drc_routed.pb -rpx fpga_top_methodology_drc_routed.rpx
+| Design       : fpga_top
+| Device       : xc7z020clg400-1
+| Speed File   : -1
+| Design State : Fully Routed
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Report Methodology
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+             Max checks: <unlimited>
+             Checks found: 183
++-----------+----------+--------------------------------------------+--------+
+| Rule      | Severity | Description                                | Checks |
++-----------+----------+--------------------------------------------+--------+
+| SYNTH-6   | Warning  | Timing of a RAM block might be sub-optimal | 178    |
+| TIMING-18 | Warning  | Missing input or output delay              | 5      |
++-----------+----------+--------------------------------------------+--------+
+
+2. REPORT DETAILS
+-----------------
+SYNTH-6#1 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[0].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#2 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[10].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#3 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[11].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#4 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[12].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#5 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[13].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#6 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[14].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#7 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[15].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#8 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[16].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#9 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[17].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#10 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[18].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#11 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[19].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#12 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[1].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#13 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[20].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#14 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[21].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#15 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[22].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#16 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[23].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#17 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[24].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#18 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[2].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#19 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[3].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#20 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[4].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#21 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[5].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#22 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[6].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#23 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[7].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#24 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[8].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#25 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_image_buffer[9].img_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#26 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[0].lane_weights_reg[0], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#27 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[10].lane_weights_reg[10], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#28 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[11].lane_weights_reg[11], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#29 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[12].lane_weights_reg[12], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#30 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[13].lane_weights_reg[13], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#31 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[14].lane_weights_reg[14], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#32 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[15].lane_weights_reg[15], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#33 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[16].lane_weights_reg[16], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#34 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[17].lane_weights_reg[17], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#35 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[18].lane_weights_reg[18], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#36 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[19].lane_weights_reg[19], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#37 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[1].lane_weights_reg[1], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#38 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[20].lane_weights_reg[20], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#39 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[21].lane_weights_reg[21], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#40 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[22].lane_weights_reg[22], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#41 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[23].lane_weights_reg[23], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#42 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[24].lane_weights_reg[24], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#43 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[2].lane_weights_reg[2], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#44 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[3].lane_weights_reg[3], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#45 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[4].lane_weights_reg[4], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#46 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[5].lane_weights_reg[5], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#47 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[6].lane_weights_reg[6], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#48 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[7].lane_weights_reg[7], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#49 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[8].lane_weights_reg[8], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#50 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/conv/cm/gen_weight_lane[9].lane_weights_reg[9], implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#51 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[0].rd_weight_reg[0]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#52 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[0].rd_weight_reg[0]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#53 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[0].rd_weight_reg[0]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#54 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[0].rd_weight_reg[0]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#55 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[10].rd_weight_reg[10]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#56 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[10].rd_weight_reg[10]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#57 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[10].rd_weight_reg[10]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#58 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[10].rd_weight_reg[10]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#59 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[11].rd_weight_reg[11]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#60 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[11].rd_weight_reg[11]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#61 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[11].rd_weight_reg[11]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#62 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[11].rd_weight_reg[11]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#63 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[12].rd_weight_reg[12]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#64 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[12].rd_weight_reg[12]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#65 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[12].rd_weight_reg[12]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#66 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[12].rd_weight_reg[12]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#67 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[13].rd_weight_reg[13]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#68 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[13].rd_weight_reg[13]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#69 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[13].rd_weight_reg[13]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#70 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[13].rd_weight_reg[13]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#71 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[14].rd_weight_reg[14]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#72 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[14].rd_weight_reg[14]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#73 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[14].rd_weight_reg[14]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#74 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[14].rd_weight_reg[14]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#75 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[15].rd_weight_reg[15]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#76 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[15].rd_weight_reg[15]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#77 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[15].rd_weight_reg[15]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#78 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[15].rd_weight_reg[15]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#79 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[1].rd_weight_reg[1]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#80 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[1].rd_weight_reg[1]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#81 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[1].rd_weight_reg[1]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#82 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[1].rd_weight_reg[1]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#83 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[2].rd_weight_reg[2]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#84 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[2].rd_weight_reg[2]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#85 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[2].rd_weight_reg[2]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#86 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[2].rd_weight_reg[2]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#87 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[3].rd_weight_reg[3]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#88 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[3].rd_weight_reg[3]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#89 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[3].rd_weight_reg[3]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#90 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[3].rd_weight_reg[3]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#91 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[4].rd_weight_reg[4]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#92 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[4].rd_weight_reg[4]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#93 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[4].rd_weight_reg[4]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#94 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[4].rd_weight_reg[4]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#95 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[5].rd_weight_reg[5]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#96 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[5].rd_weight_reg[5]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#97 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[5].rd_weight_reg[5]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#98 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[5].rd_weight_reg[5]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#99 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[6].rd_weight_reg[6]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#100 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[6].rd_weight_reg[6]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#101 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[6].rd_weight_reg[6]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#102 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[6].rd_weight_reg[6]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#103 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[7].rd_weight_reg[7]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#104 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[7].rd_weight_reg[7]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#105 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[7].rd_weight_reg[7]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#106 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[7].rd_weight_reg[7]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#107 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[8].rd_weight_reg[8]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#108 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[8].rd_weight_reg[8]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#109 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[8].rd_weight_reg[8]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#110 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[8].rd_weight_reg[8]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#111 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[9].rd_weight_reg[9]_0, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#112 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[9].rd_weight_reg[9]_1, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#113 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[9].rd_weight_reg[9]_2, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#114 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/fc1/fc1mem/gen_weight_lane[9].rd_weight_reg[9]_3, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#115 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[0].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#116 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[0].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#117 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[0].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#118 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[0].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#119 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[10].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#120 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[10].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#121 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[10].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#122 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[10].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#123 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[11].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#124 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[11].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#125 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[11].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#126 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[11].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#127 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[12].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#128 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[12].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#129 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[12].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#130 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[12].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#131 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[13].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#132 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[13].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#133 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[13].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#134 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[13].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#135 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[14].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#136 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[14].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#137 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[14].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#138 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[14].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#139 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[15].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#140 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[15].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#141 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[15].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#142 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[15].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#143 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[1].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#144 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[1].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#145 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[1].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#146 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[1].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#147 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[2].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#148 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[2].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#149 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[2].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#150 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[2].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#151 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[3].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#152 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[3].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#153 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[3].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#154 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[3].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#155 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[4].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#156 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[4].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#157 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[4].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#158 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[4].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#159 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[5].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#160 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[5].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#161 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[5].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#162 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[5].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#163 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[6].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#164 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[6].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#165 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[6].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#166 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[6].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#167 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[7].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#168 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[7].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#169 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[7].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#170 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[7].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#171 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[8].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#172 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[8].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#173 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[8].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#174 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[8].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#175 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[9].gen_clone[0].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#176 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[9].gen_clone[1].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#177 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[9].gen_clone[2].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+SYNTH-6#178 Warning
+Timing of a RAM block might be sub-optimal  
+The timing for the instance at/pool/pm/gen_pool_mem[9].gen_clone[3].pool_mem_reg, implemented as a RAM block, might be sub-optimal as no output register was merged into the block.
+Related violations: <none>
+
+TIMING-18#1 Warning
+Missing input or output delay  
+An output delay is missing on digit[0] relative to the rising and/or falling clock edge(s) of sys_clk_pin.
+Related violations: <none>
+
+TIMING-18#2 Warning
+Missing input or output delay  
+An output delay is missing on digit[1] relative to the rising and/or falling clock edge(s) of sys_clk_pin.
+Related violations: <none>
+
+TIMING-18#3 Warning
+Missing input or output delay  
+An output delay is missing on digit[2] relative to the rising and/or falling clock edge(s) of sys_clk_pin.
+Related violations: <none>
+
+TIMING-18#4 Warning
+Missing input or output delay  
+An output delay is missing on digit[3] relative to the rising and/or falling clock edge(s) of sys_clk_pin.
+Related violations: <none>
+
+TIMING-18#5 Warning
+Missing input or output delay  
+An output delay is missing on result_ready relative to the rising and/or falling clock edge(s) of sys_clk_pin.
+Related violations: <none>
+
+

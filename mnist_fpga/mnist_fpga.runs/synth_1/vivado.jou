@@ -1,0 +1,24 @@
+#-----------------------------------------------------------
+# Vivado v2025.2 (64-bit)
+# SW Build 6299465 on Fri Nov 14 12:34:56 MST 2025
+# IP Build 6300035 on Fri Nov 14 10:48:45 MST 2025
+# SharedData Build 6298862 on Thu Nov 13 04:50:51 MST 2025
+# Start of session at: Mon Sep 21 21:43:54 2026
+# Process ID         : 525663
+# Current directory  : /home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.runs/synth_1
+# Command line       : vivado -log fpga_top.vds -product Vivado -mode batch -messageDb vivado.pb -notrace -source fpga_top.tcl
+# Log file           : /home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.runs/synth_1/fpga_top.vds
+# Journal file       : /home/eneri/Documents/Projects/mnist-accel/mnist_fpga/mnist_fpga.runs/synth_1/vivado.jou
+# Running On         : spark
+# Platform           : Ubuntu
+# Operating System   : Ubuntu 26.04.1 LTS
+# Processor Detail   : AMD Ryzen 5 5600X 6-Core Processor
+# CPU Frequency      : 3273.984 MHz
+# CPU Physical cores : 6
+# CPU Logical cores  : 12
+# Host memory        : 16151 MB
+# Swap memory        : 4294 MB
+# Total Virtual      : 20446 MB
+# Available Virtual  : 11964 MB
+#-----------------------------------------------------------
+source fpga_top.tcl -notrace

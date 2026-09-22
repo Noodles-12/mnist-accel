@@ -48,8 +48,8 @@ module conv_dp#(
     logic signed [31:0] relu_res;
 
     // Cycles from the area_pixel_v / out_addr inputs through to final_res:
-    // 1 corrected_actv + 2 mac_unit + 5 adder tree + 1 bias + 1 relu + 1 requantize
-    localparam int DP_LATENCY = 11;
+    // 1 corrected_actv + 2 mac_unit + 5 adder tree + 1 bias + 1 relu + 2 requantize
+    localparam int DP_LATENCY = 12;
 
     logic calc_v_pipe [0:DP_LATENCY-1];             // area_pixel_v walked alongside the data
     logic [9:0] res_addr_pipe [0:DP_LATENCY-1];     // out_addr walked alongside the data
@@ -188,6 +188,7 @@ module conv_dp#(
     // Requantize
     logic signed [63:0] requant_prod;
     logic signed [31:0] requant_shifted;
+    logic signed [31:0] requant_shifted_reg;
     logic signed [31:0] requant_offset;
     logic [7:0] requant_clamped;
 
@@ -197,7 +198,18 @@ module conv_dp#(
     always_comb begin
         requant_prod    = relu_res * REQUANT_M0 + REQUANT_ROUND_BIAS;
         requant_shifted = requant_prod >>> REQUANT_SHIFT;
-        requant_offset  = requant_shifted + REQUANT_ZERO_POINT;
+    end
+
+    always_ff @ (posedge clk) begin
+        if(!rst_n) begin
+            requant_shifted_reg <= '0;
+        end else begin
+            requant_shifted_reg <= requant_shifted;
+        end
+    end
+
+    always_comb begin
+        requant_offset = requant_shifted_reg + REQUANT_ZERO_POINT;
 
         if(requant_offset > 255)
             requant_clamped = 8'd255;

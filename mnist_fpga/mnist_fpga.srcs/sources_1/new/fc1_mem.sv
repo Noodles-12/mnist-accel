@@ -31,10 +31,36 @@ module fc1_mem#(
     (* ram_style = "block" *)
     logic [7:0] data_mem [0:NUM_CHANNELS-1][0:SPATIAL-1];
 
+    logic [7:0] pool_result_r [0:15];
+    logic [7:0] pool_res_addr_r;
+    logic pool_res_v_r;
+
+    logic [7:0] pool_result_r2 [0:15];
+    logic [7:0] pool_res_addr_r2;
+    logic pool_res_v_r2;
+
+    logic [7:0] pool_result_r3 [0:15];
+    logic [7:0] pool_res_addr_r3;
+    logic pool_res_v_r3;
+
+    always_ff @ (posedge clk) begin
+        pool_result_r <= pool_result;
+        pool_res_addr_r <= pool_res_addr;
+        pool_res_v_r <= pool_res_v;
+
+        pool_result_r2 <= pool_result_r;
+        pool_res_addr_r2 <= pool_res_addr_r;
+        pool_res_v_r2 <= pool_res_v_r;
+
+        pool_result_r3 <= pool_result_r2;
+        pool_res_addr_r3 <= pool_res_addr_r2;
+        pool_res_v_r3 <= pool_res_v_r2;
+    end
+
     for(genvar c = 0; c < NUM_CHANNELS; c = c + 1) begin : gen_fc1_bank
         always_ff @ (posedge clk) begin
-            if(pool_res_v) begin
-                data_mem[c][pool_res_addr] <= pool_result[c];
+            if(pool_res_v_r3) begin
+                data_mem[c][pool_res_addr_r3] <= pool_result_r3[c];
             end
         end
     end : gen_fc1_bank

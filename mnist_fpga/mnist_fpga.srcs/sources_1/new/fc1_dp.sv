@@ -37,22 +37,26 @@ module fc1_dp#(
     logic signed [8:0] corrected_data;
     assign corrected_data = $signed({1'b0, data}) - 9'sd128;
 
-    logic [1:0] phase_d1, phase_d2;
-    logic res_en_d1, res_en_d2;
+    logic [1:0] phase_d1, phase_d2, phase_d3;
+    logic res_en_d1, res_en_d2, res_en_d3;
 
     always_ff @ (posedge clk) begin
         if(!rst_n) begin
             phase_d1 <= '0;
             phase_d2 <= '0;
+            phase_d3 <= '0;
             res_en_d1 <= 0;
             res_en_d2 <= 0;
+            res_en_d3 <= 0;
             res_v <= 0;
         end else begin
             phase_d1 <= phase_idx;
             phase_d2 <= phase_d1;
+            phase_d3 <= phase_d2;
             res_en_d1 <= res_en;
             res_en_d2 <= res_en_d1;
-            res_v <= res_en_d2;
+            res_en_d3 <= res_en_d2;
+            res_v <= res_en_d3;
         end
     end
 
@@ -63,14 +67,28 @@ module fc1_dp#(
         logic signed [31:0] biased_res;
         logic signed [31:0] relu_res;
 
+        (* use_dsp = "yes" *)
+        logic signed [16:0] mac_prod;
+        logic mac_prod_v;
+
         // MAC
+        always_ff @ (posedge clk) begin
+            if(!rst_n) begin
+                mac_prod <= '0;
+                mac_prod_v <= 1'b0;
+            end else begin
+                mac_prod <= weight[l] * corrected_data;
+                mac_prod_v <= data_v;
+            end
+        end
+
         always_ff @ (posedge clk) begin
             if(!rst_n) begin
                 calc <= '0;
             end else if(res_en) begin
                 calc <= '0;
-            end else if(data_v) begin
-                calc <= calc + weight[l] * corrected_data;
+            end else if(mac_prod_v) begin
+                calc <= calc + mac_prod;
             end
         end
 
@@ -95,13 +113,25 @@ module fc1_dp#(
         // Requantize
         logic signed [63:0] requant_prod;
         logic signed [31:0] requant_shifted;
+        logic signed [31:0] requant_shifted_reg;
         logic signed [31:0] requant_offset;
         logic [7:0] requant_clamped;
 
         always_comb begin
             requant_prod    = relu_res * REQUANT_M0 + REQUANT_ROUND_BIAS;
             requant_shifted = requant_prod >>> REQUANT_SHIFT;
-            requant_offset  = requant_shifted + REQUANT_ZERO_POINT;
+        end
+
+        always_ff @ (posedge clk) begin
+            if(!rst_n) begin
+                requant_shifted_reg <= '0;
+            end else begin
+                requant_shifted_reg <= requant_shifted;
+            end
+        end
+
+        always_comb begin
+            requant_offset = requant_shifted_reg + REQUANT_ZERO_POINT;
 
             if(requant_offset > 255)
                 requant_clamped = 8'd255;
@@ -117,7 +147,7 @@ module fc1_dp#(
                 res_addr[l] <= '0;
             end else begin
                 res[l] <= requant_clamped;
-                res_addr[l] <= NEURON_BASE + phase_d2;
+                res_addr[l] <= NEURON_BASE + phase_d3;
             end
         end
     end : gen_mac_lane

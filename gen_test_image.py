@@ -155,6 +155,16 @@ def compute_golden_fc1(pooled, fc1_weights, fc1_bias_int32,
     return out
 
 
+def compute_golden_fc2(fc1_out, fc2_weights, fc2_bias_int32,
+                        num_classes=10, num_inputs=64):
+    acc = []
+    for n in range(num_classes):
+        a = sum(fc2_weights[n * num_inputs + i] * (fc1_out[i] - 128)
+                for i in range(num_inputs))
+        acc.append(a + fc2_bias_int32[n])
+    return acc
+
+
 def compute_golden_pool(golden_conv1):
     """2x2 non-overlapping max pool, stride 2, over each filter's 24x24
     golden conv1 output -> 12x12. Matches pool_addr_calc's addressing
@@ -287,6 +297,22 @@ def main():
     print(f"  wrote {fc1_path} ({len(fc1_out)} values, one per neuron)")
     print(f"  golden fc1 output: {sum(1 for v in fc1_out if v > FC1_REQUANT_ZERO_POINT)}/{len(fc1_out)} "
           f"above the relu floor ({FC1_REQUANT_ZERO_POINT}), max={max(fc1_out)}")
+
+    fc2_weights = read_hex_mem(os.path.join(args.export_dir, "fc2_weights.mem"), signed_width=8)
+    fc2_bias = read_hex_mem(os.path.join(args.export_dir, "fc2_bias.mem"), signed_width=32)
+    fc2_acc = compute_golden_fc2(fc1_out, fc2_weights, fc2_bias)
+    digit = max(range(len(fc2_acc)), key=lambda n: fc2_acc[n])
+
+    fc2_path = os.path.join(args.out_dir, "test_image_golden_fc2.mem")
+    with open(fc2_path, "w") as f:
+        for v in fc2_acc:
+            f.write(f"{v & 0xFFFFFFFF:08x}\n")
+    print(f"  wrote {fc2_path} ({len(fc2_acc)} int32 accumulators, one per class)")
+
+    digit_path = os.path.join(args.out_dir, "test_image_golden_digit.mem")
+    with open(digit_path, "w") as f:
+        f.write(f"{digit:01x}\n")
+    print(f"  wrote {digit_path} (predicted digit = {digit}, image label = {label})")
 
     readable_path = os.path.join(args.img_dir, f"test_image_{args.index}_readable.txt")
     with open(readable_path, "w") as f:

@@ -18,7 +18,7 @@ module fc2_mem(
 
     // Trying to not inference BRAM with this (LUTRAM or whatever has parallel writes)
     (* ram_style = "registers" *)
-    logic [7:0] memory [0:63];
+    logic [7:0] mem_bank [0:15][0:3];
 
     (* rom_style = "distributed" *)
     logic signed [7:0] weights [0:9][0:63];
@@ -29,21 +29,17 @@ module fc2_mem(
 
     for(genvar p = 0; p < 16; p = p + 1) begin
         always_ff @ (posedge clk) begin
-            if(!rst_n) begin
-                memory[wr_addr[p]] <= '0;
-            end else begin
-                if(wr_v)
-                    memory[wr_addr[p]] <= wr_data[p];
-            end
+            if(wr_v)
+                mem_bank[p][wr_addr[p][1:0]] <= wr_data[p];
         end
     end
 
     for(genvar p = 0; p < 10; p = p + 1) begin
         always_ff @ (posedge clk) begin
             if(!rst_n) begin
-                rd_weight[p] <= 0;
+                rd_weights[p] <= 0;
             end else begin
-                rd_weight[p] <= weights[p][rd_addr];
+                rd_weights[p] <= weights[p][rd_addr];
             end
         end
     end
@@ -53,7 +49,7 @@ module fc2_mem(
             rd_data <= '0;
             data_v <= '0;
         end else begin
-            rd_data <= memory[rd_addr];
+            rd_data <= mem_bank[rd_addr[5:2]][rd_addr[1:0]];
             data_v <= rd_v;
         end
     end
